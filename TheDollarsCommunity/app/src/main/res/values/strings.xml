@@ -5,4 +5,18 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="share">Share</string>
+    <string name="send">Send</string>
+    <string name="comm">Communicate</string>
+    <string name="main">Main</string>
+    <string name="roadrunner_forums">RoadRunner Forums</string>
+    <string name="dollars_worldwide">Dollars Worldwide</string>
+    <string name="chat_all">Chat all members</string>
+    <string name="chat_nearby">Chat members nearby</string>
+    <string name="drrr">Drrr</string>
+    <string name="other">Other</string>
+    <string name="tumblr">Tumblr</string>
+    <string name="map">Map</string>
+    <string name="free_rice">Free Rice!</string>
+    <string name="action_contact">Contact Us!</string>
 </resources>
