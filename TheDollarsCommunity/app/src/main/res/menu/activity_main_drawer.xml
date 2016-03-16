@@ -16,7 +16,7 @@
             android:title="@string/dollars_worldwide"/>
     </group>
 
-    <item android:title="Chats">
+    <item android:title="@string/chats">
         <menu>
             <item
                 android:id="@+id/nav_chat_all"
@@ -40,10 +40,12 @@
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
                 android:title="@string/share"/>
+            <!--
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
                 android:title="@string/send"/>
+                -->
         </menu>
     </item>
 
@@ -61,6 +63,9 @@
             <item
                 android:id="@+id/nav_free_rice"
                 android:title="@string/free_rice"/>
+            <item
+                android:id="@+id/nav_kiva"
+                android:title="@string/kiva"/>
         </menu>
     </item>
 

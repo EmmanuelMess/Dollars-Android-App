@@ -11,6 +11,7 @@
     <string name="main">Main</string>
     <string name="roadrunner_forums">RoadRunner Forums</string>
     <string name="dollars_worldwide">Dollars Worldwide</string>
+    <string name="chats">Chats</string>
     <string name="chat_all">Chat all members</string>
     <string name="chat_nearby">Chat members nearby</string>
     <string name="drrr">Drrr</string>
@@ -18,5 +19,8 @@
     <string name="tumblr">Tumblr</string>
     <string name="map">Map</string>
     <string name="free_rice">Free Rice!</string>
+    <string name="kiva">Lend Cash on Kiva</string>
     <string name="action_contact">Contact Us!</string>
+    <string name="title_activity_password">Password</string>
+    <string name="connect">Connect</string>
 </resources>
