@@ -29,8 +29,8 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
 
-	final String[] WEBS = {"http://dollars-worldwide.org/community/", "http://www.drrrchat.com/", "http://dollars-missions.tumblr.com/",
-			"freerice.com", "https://www.kiva.org/"};
+	final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
+			"http://dollars-missions.tumblr.com/", "freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
 	ProgressBar progressBar;
@@ -128,29 +128,29 @@ public class MainActivity extends AppCompatActivity
 			case R.id.nav_rss_main:
 				break;
 			case R.id.nav_roadrunner_forum:
-				break;
-			case R.id.nav_dollars_worldwide:
 				connect(WEBS[0]);
 				break;
-
-			case R.id.nav_chat_all:
+			case R.id.nav_dollars_worldwide:
+				connect(WEBS[1]);
 				break;
-			case R.id.nav_chat_local:
+
+			case R.id.nav_chat:
+				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 				break;
 			case R.id.nav_chat_drrr:
-				connect(WEBS[1]);//TODO check url
+				connect(WEBS[2]);//TODO check url
 				break;
 
 			case R.id.nav_tumblr:
-				connect(WEBS[2]);
+				connect(WEBS[3]);
 				break;
 			case R.id.nav_map:
 				break;
 			case R.id.nav_free_rice:
-				connect(WEBS[3]);//TODO check url
+				connect(WEBS[4]);//TODO check url
 				break;
 			case R.id.nav_kiva:
-				connect(WEBS[4]);
+				connect(WEBS[5]);
 				break;
 		}
 
@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity
 					.setMessage("Unable to connect to the internet")
 					.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
+
 						}
 					})
 					.setIcon(android.R.drawable.ic_dialog_alert)
