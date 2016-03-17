@@ -1,15 +1,13 @@
 package org.dollars_bbs.thedollarscommunity;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.IntentCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.Objects;
 
 public class PasswordActivity extends AppCompatActivity {
 
@@ -25,9 +23,13 @@ public class PasswordActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				TextView t = ((TextView) findViewById(R.id.textView));
 				if(t != null) {
-					if (equal(t.getText().toString(), "baccano"))
-						startActivity(new Intent(getApplicationContext(), MainActivity.class));
-					else
+					if (Utils.equal(t.getText().toString(), "baccano")) {
+						Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+						//Clears the Stack so that BACK won't lead here.
+						intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);
+						startActivity(intent);
+
+					} else
 						Toast.makeText(getApplicationContext(), "Wrong!", Toast.LENGTH_SHORT).show();
 				}
 			}
@@ -35,10 +37,6 @@ public class PasswordActivity extends AppCompatActivity {
 
 		View b = findViewById(R.id.button);
 		if(b != null) b.setOnClickListener(c);
-	}
-
-	private boolean equal(Object o1, Object o2) {
-		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && Objects.equals(o1, o2)) || o1.equals(o2);
 	}
 
 }
