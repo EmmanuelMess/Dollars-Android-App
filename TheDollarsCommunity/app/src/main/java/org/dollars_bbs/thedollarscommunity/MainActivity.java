@@ -1,26 +1,41 @@
 package org.dollars_bbs.thedollarscommunity;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
 
+	final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
+			"http://dollars-missions.tumblr.com/", "freerice.com", "https://www.kiva.org/"};
+
 	WebView webView;
+	ProgressBar progressBar;
+	ShareActionProvider mShareActionProvider;
+	String url = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +59,20 @@ public class MainActivity extends AppCompatActivity
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 				this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-		if(drawer != null)
+		if (drawer != null)
 			drawer.addDrawerListener(toggle);
 		toggle.syncState();
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-		if(navigationView != null)
+		if (navigationView != null)
 			navigationView.setNavigationItemSelectedListener(this);
 
 		webView = (WebView) findViewById(R.id.webView);
+		assert webView != null;
+		webView.getSettings().setJavaScriptEnabled(true);
+		webView.setWebViewClient(new PWebViewClient());
+
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 	}
 
 	@Override
@@ -69,6 +89,9 @@ public class MainActivity extends AppCompatActivity
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+
+		//Gets the compat share action provider
+		mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
 		return true;
 	}
 
@@ -79,10 +102,17 @@ public class MainActivity extends AppCompatActivity
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_contact) {
-
-			return true;
+		switch (id) {
+			case R.id.action_share:
+				//Creates intent and shares
+				Intent sendIntent = new Intent();
+				sendIntent.setAction(Intent.ACTION_SEND);
+				sendIntent.setType("text/plain");
+				sendIntent.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
+				mShareActionProvider.setShareIntent(sendIntent);
+				return true;
+			case R.id.action_contact:
+				return true;
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -94,49 +124,38 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		switch(id) {
+		switch (id) {
 			case R.id.nav_rss_main:
 				break;
 			case R.id.nav_roadrunner_forum:
+				connect(WEBS[0]);
 				break;
 			case R.id.nav_dollars_worldwide:
-				connect("http://www.dollars-worldwide.org/");//TODO check url
+				connect(WEBS[1]);
 				break;
 
-			case R.id.nav_chat_all:
-				break;
-			case R.id.nav_chat_local:
+			case R.id.nav_chat:
+				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 				break;
 			case R.id.nav_chat_drrr:
-				connect("http://www.drrrchat.com/");//TODO check url
+				connect(WEBS[2]);//TODO check url
 				break;
-
-			case R.id.nav_share:
-				Intent sendIntent = new Intent();
-				sendIntent.setAction(Intent.ACTION_SEND);
-				sendIntent.setType("text/url");
-				startActivity(Intent.createChooser(sendIntent, webView.getUrl()));
-				break;
-			//case R.id.nav_send:
-			//	break;
 
 			case R.id.nav_tumblr:
-				connect("http://dollars-missions.tumblr.com/");//TODO check url
+				connect(WEBS[3]);
 				break;
 			case R.id.nav_map:
 				break;
 			case R.id.nav_free_rice:
-				connect("freerice.com");//TODO check url
+				connect(WEBS[4]);//TODO check url
 				break;
 			case R.id.nav_kiva:
-				connect("https://www.kiva.org/");
+				connect(WEBS[5]);
 				break;
-
-			default:
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-		if(drawer != null)
+		if (drawer != null)
 			drawer.closeDrawer(GravityCompat.START);
 		return true;
 	}
@@ -161,14 +180,17 @@ public class MainActivity extends AppCompatActivity
 	 */
 	private void connect(String url) {
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
-		if(isOnline()) {
+		if (isOnline()) {
+			this.url = url;
 			webView.loadUrl(url);
 		} else {
 			new AlertDialog.Builder(this)
 					.setTitle("No internet")
 					.setMessage("Unable to connect to the internet")
 					.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {}
+						public void onClick(DialogInterface dialog, int which) {
+
+						}
 					})
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.create()
@@ -185,11 +207,52 @@ public class MainActivity extends AppCompatActivity
 		Runtime runtime = Runtime.getRuntime();
 		try {
 			Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-			int     exitValue = ipProcess.waitFor();
+			int exitValue = ipProcess.waitFor();
 			return (exitValue == 0);
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace(); }
+			e.printStackTrace();
+		}
 
 		return false;
+	}
+
+	private class PWebViewClient extends WebViewClient {
+
+		private ProgressDialog progress = null;
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			if (Uri.parse(url).getHost().equals(url) && !Utils.equal(url, WEBS[0]) && !Utils.equal(url, WEBS[1])) {
+				// This is my web site, so do not override; let my WebView load the page
+				return false;
+			}
+			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+			startActivity(intent);
+			return true;
+		}
+
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			super.onPageStarted(view, url, favicon);
+			unloadPage();
+			progressBar.setVisibility(View.VISIBLE);
+		}
+
+		@Override
+		public void onPageFinished(WebView view, String url) {
+			super.onPageFinished(view, url);
+			progressBar.setVisibility(View.GONE);
+		}
+
+		private void unloadPage() {
+			webView.destroyDrawingCache();
+
+			if (Build.VERSION.SDK_INT >= 18) {
+				webView.loadUrl("about:blank");
+			} else {
+				webView.clearView();
+			}
+		}
 	}
 }
