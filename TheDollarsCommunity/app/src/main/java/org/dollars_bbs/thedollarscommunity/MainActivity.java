@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity
 			"http://dollars-missions.tumblr.com/", "freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
+	ListView mainRSS;
 	ProgressBar progressBar;
 	ShareActionProvider mShareActionProvider;
 	String url = "";
@@ -64,13 +66,18 @@ public class MainActivity extends AppCompatActivity
 		toggle.syncState();
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-		if (navigationView != null)
-			navigationView.setNavigationItemSelectedListener(this);
+		assert navigationView != null;
+		navigationView.setNavigationItemSelectedListener(this);
+		//The first item is selected at start
+		navigationView.getMenu().getItem(0).setChecked(true);
+		onNavigationItemSelected(navigationView.getMenu().getItem(0));
 
 		webView = (WebView) findViewById(R.id.webView);
 		assert webView != null;
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setWebViewClient(new PWebViewClient());
+
+		mainRSS = (ListView) findViewById(R.id.main_rss);
 
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 	}
@@ -126,6 +133,9 @@ public class MainActivity extends AppCompatActivity
 
 		switch (id) {
 			case R.id.nav_rss_main:
+				webView.setVisibility(View.GONE);
+				mainRSS.setVisibility(View.VISIBLE);
+				loadMainRSS();
 				break;
 			case R.id.nav_roadrunner_forum:
 				connect(WEBS[0]);
@@ -179,6 +189,8 @@ public class MainActivity extends AppCompatActivity
 	 * @param url the url to load
 	 */
 	private void connect(String url) {
+		mainRSS.setVisibility(View.GONE);
+		webView.setVisibility(View.VISIBLE);
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
 		if (isOnline()) {
 			this.url = url;
@@ -216,9 +228,11 @@ public class MainActivity extends AppCompatActivity
 		return false;
 	}
 
-	private class PWebViewClient extends WebViewClient {
+	private void loadMainRSS() {
 
-		private ProgressDialog progress = null;
+	}
+
+	private class PWebViewClient extends WebViewClient {
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
