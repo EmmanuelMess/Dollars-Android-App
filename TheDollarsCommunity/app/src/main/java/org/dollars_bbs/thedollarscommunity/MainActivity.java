@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity
 
 	WebView webView;
 	ListView mainRSS;
-	int currentPageFromRSS = -1, rssLoadFailed = -1;
+	int currentRSSFeedNum = 0, rssLoadFailed = -1;
 	RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
 	ProgressBar progressBar;
 	ShareActionProvider mShareActionProvider;
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
-		currentPageFromRSS = -1;
+		currentRSSFeedNum = -1;
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
@@ -199,8 +199,7 @@ public class MainActivity extends AppCompatActivity
 		if (rssLoadFailed != -1) {
 			loadRSS(rssLoadFailed);
 		} else {
-			currentPageFromRSS = position;
-			connect(RSSFeeds[position].getItems().get(position).getLink().toString());
+			connect(RSSFeeds[currentRSSFeedNum].getItems().get(position).getLink().toString());
 		}
 	}
 
@@ -210,8 +209,8 @@ public class MainActivity extends AppCompatActivity
 			if (webView.canGoBack()) {//Goes back to last page
 				webView.goBack();
 				return true;
-			} else if (currentPageFromRSS != -1) {//Goes back to RSS list
-				loadRSS(currentPageFromRSS);
+			} else if (currentRSSFeedNum != -1) {//Goes back to RSS list
+				loadRSS(currentRSSFeedNum);
 				return true;
 			}
 		}
@@ -244,8 +243,8 @@ public class MainActivity extends AppCompatActivity
 
 		if (showErrorIfOffline()) {
 			final ArrayList<String> items = new ArrayList<>();
-
 			progressBar.setVisibility(View.VISIBLE);
+			currentRSSFeedNum = RSSNumber;
 
 			try {
 				if (RSSFeeds[RSSNumber] == null) {
