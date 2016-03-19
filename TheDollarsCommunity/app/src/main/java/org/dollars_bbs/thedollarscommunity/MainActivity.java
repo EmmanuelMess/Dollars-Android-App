@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
 	final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-					"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
+					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
 	ListView mainRSS;
@@ -171,20 +171,23 @@ public class MainActivity extends AppCompatActivity
 			case R.id.nav_chat:
 				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 				break;
-			case R.id.nav_chat_drrr:
+			case R.id.nav_chat_durarara:
 				connect(WEBS[2]);//TODO check url
+				break;
+			case R.id.nav_chat_dollars_drrr:
+				connect(WEBS[3]);//TODO check url
 				break;
 
 			case R.id.nav_tumblr:
-				connect(WEBS[3]);
+				connect(WEBS[4]);
 				break;
 			case R.id.nav_map:
 				break;
 			case R.id.nav_free_rice:
-				connect(WEBS[4]);//TODO check url
+				connect(WEBS[5]);
 				break;
 			case R.id.nav_kiva:
-				connect(WEBS[5]);
+				connect(WEBS[6]);
 				break;
 		}
 
