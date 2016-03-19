@@ -1,6 +1,6 @@
 package org.dollars_bbs.thedollarscommunity;
 
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,17 +22,33 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import org.mcsoxford.rss.RSSFeed;
+import org.mcsoxford.rss.RSSReader;
+import org.mcsoxford.rss.RSSReaderException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-		implements NavigationView.OnNavigationItemSelectedListener {
+		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
-	final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-			"http://dollars-missions.tumblr.com/", "freerice.com", "https://www.kiva.org/"};
+	final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
+			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
+			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
+					"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
+	ListView mainRSS;
+	int currentPageFromRSS = -1, rssLoadFailed = -1;
+	RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
 	ProgressBar progressBar;
 	ShareActionProvider mShareActionProvider;
 	String url = "";
@@ -64,15 +80,21 @@ public class MainActivity extends AppCompatActivity
 		toggle.syncState();
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-		if (navigationView != null)
-			navigationView.setNavigationItemSelectedListener(this);
+		assert navigationView != null;
+		navigationView.setNavigationItemSelectedListener(this);
 
 		webView = (WebView) findViewById(R.id.webView);
 		assert webView != null;
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setWebViewClient(new PWebViewClient());
 
+		mainRSS = (ListView) findViewById(R.id.main_rss);
+
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+		//The first item is selected at start
+		navigationView.getMenu().getItem(0).setChecked(true);
+		onNavigationItemSelected(navigationView.getMenu().getItem(0));
 	}
 
 	@Override
@@ -121,12 +143,24 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
+		currentPageFromRSS = -1;
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
 		switch (id) {
 			case R.id.nav_rss_main:
+				loadRSS(0);
 				break;
+			case R.id.nav_rss_missions:
+				loadRSS(1);
+				break;
+			case R.id.nav_rss_news:
+				loadRSS(2);
+				break;
+			case R.id.nav_rss_personal:
+				loadRSS(3);
+				break;
+
 			case R.id.nav_roadrunner_forum:
 				connect(WEBS[0]);
 				break;
@@ -161,14 +195,27 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// Check if the key event was the Back button and if there's history
-		if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
-			webView.goBack();
-			return true;
+	public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+		if (rssLoadFailed != -1) {
+			loadRSS(rssLoadFailed);
+		} else {
+			currentPageFromRSS = position;
+			connect(RSSFeeds[position].getItems().get(position).getLink().toString());
 		}
-		// If it wasn't the Back key or there's no web page history, bubble up to the default
-		// system behavior (probably exit the activity)
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (webView.canGoBack()) {//Goes back to last page
+				webView.goBack();
+				return true;
+			} else if (currentPageFromRSS != -1) {//Goes back to RSS list
+				loadRSS(currentPageFromRSS);
+				return true;
+			}
+		}
+		// Keybubble up to the default system behavior (probably exit the activity)
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -179,22 +226,85 @@ public class MainActivity extends AppCompatActivity
 	 * @param url the url to load
 	 */
 	private void connect(String url) {
+		mainRSS.setVisibility(View.GONE);
+		webView.setVisibility(View.VISIBLE);
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
-		if (isOnline()) {
+		if (showErrorIfOffline()) {
 			this.url = url;
 			webView.loadUrl(url);
+		}
+	}
+
+	/**
+	 * Loads the RSS list, shows error if something fails.
+	 */
+	private void loadRSS(final int RSSNumber) {
+		webView.setVisibility(View.GONE);
+		mainRSS.setVisibility(View.VISIBLE);
+
+		if (showErrorIfOffline()) {
+			final ArrayList<String> items = new ArrayList<>();
+
+			progressBar.setVisibility(View.VISIBLE);
+
+			try {
+				if (RSSFeeds[RSSNumber] == null) {
+					Thread t = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
+							} catch (RSSReaderException e) {
+								failedFetch(RSSNumber);
+							}
+						}
+					});
+
+					t.start(); // spawn thread
+					t.join();  // wait for thread to finish
+				}
+			} catch (InterruptedException e) {
+				failedFetch(RSSNumber);
+			}
+
+			if (RSSFeeds[RSSNumber] != null) {
+				for (int i = 0; i < 20 && RSSFeeds[RSSNumber].getItems().size() > i; i++)
+					items.add(RSSFeeds[RSSNumber].getItems().get(i).getTitle());
+
+				rssLoadFailed = -1;
+			} else {
+				items.add(getApplicationContext().getString(R.string.failed_feed_load));
+			}
+
+			progressBar.setVisibility(View.GONE);
+
+			final PArrayAdapter adapter = new PArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, items);
+			mainRSS.setAdapter(adapter);
+			mainRSS.setOnItemClickListener(this);
+		}
+	}
+
+	private void failedFetch(int rss) {
+		Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.failed_feed_fetch),
+				Toast.LENGTH_SHORT).show();
+		rssLoadFailed = rss;
+	}
+
+	private boolean showErrorIfOffline() {
+		if (isOnline() || Build.FINGERPRINT.contains("generic")) {//isOnline() DOES NOT work on some emulators, hack from here: http://stackoverflow.com/a/5864867/3124150
+			return true;
 		} else {
 			new AlertDialog.Builder(this)
 					.setTitle("No internet")
 					.setMessage("Unable to connect to the internet")
-					.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
 
 						}
 					})
-					.setIcon(android.R.drawable.ic_dialog_alert)
 					.create()
 					.show();
+			return false;
 		}
 	}
 
@@ -217,8 +327,6 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	private class PWebViewClient extends WebViewClient {
-
-		private ProgressDialog progress = null;
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -245,6 +353,7 @@ public class MainActivity extends AppCompatActivity
 			progressBar.setVisibility(View.GONE);
 		}
 
+		@SuppressWarnings("deprecation")
 		private void unloadPage() {
 			webView.destroyDrawingCache();
 
@@ -255,4 +364,29 @@ public class MainActivity extends AppCompatActivity
 			}
 		}
 	}
+
+	private class PArrayAdapter extends ArrayAdapter<String> {
+
+		HashMap<String, Integer> mIdMap = new HashMap<>();
+
+		public PArrayAdapter(Context context, int textViewResourceId,
+		                     List<String> objects) {
+			super(context, textViewResourceId, objects);
+			for (int i = 0; i < objects.size(); ++i) {
+				mIdMap.put(objects.get(i), i);
+			}
+		}
+
+		@Override
+		public long getItemId(int position) {
+			String item = getItem(position);
+			return mIdMap.get(item);
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return true;
+		}
+	}
+
 }
