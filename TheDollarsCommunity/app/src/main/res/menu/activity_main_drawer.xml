@@ -7,6 +7,22 @@
             android:icon="@drawable/ic_rss_feed_white_24dp"
             android:title="@string/main"/>
         <item
+            android:id="@+id/nav_rss_missions"
+            android:icon="@drawable/ic_rss_feed_white_24dp"
+            android:title="@string/missions"/>
+        <item
+            android:id="@+id/nav_rss_news"
+            android:icon="@drawable/ic_rss_feed_white_24dp"
+            android:title="@string/news"/>
+        <item
+            android:id="@+id/nav_rss_personal"
+            android:icon="@drawable/ic_rss_feed_white_24dp"
+            android:title="@string/personal"/>
+    </group>
+
+    <item android:title="@string/forums">
+        <menu>
+        <item
             android:id="@+id/nav_roadrunner_forum"
             android:icon="@drawable/ic_web_white_24dp"
             android:title="@string/roadrunner_forums"/>
@@ -14,7 +30,8 @@
             android:id="@+id/nav_dollars_worldwide"
             android:icon="@drawable/ic_web_white_24dp"
             android:title="@string/dollars_worldwide"/>
-    </group>
+        </menu>
+    </item>
 
     <item android:title="@string/chats">
         <menu>

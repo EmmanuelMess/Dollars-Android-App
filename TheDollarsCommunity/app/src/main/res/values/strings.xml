@@ -11,8 +11,12 @@
     <string name="action_share">Share</string>
     <string name="action_contact">Contact Us!</string>
 
-    <string name="send">Send</string>
     <string name="main">Main</string>
+    <string name="missions">Missions</string>
+    <string name="news">News</string>
+    <string name="personal">Personal</string>
+
+    <string name="forums">Forums</string>
     <string name="roadrunner_forums">RoadRunner Forums</string>
     <string name="dollars_worldwide">Dollars Worldwide</string>
 
@@ -21,6 +25,7 @@
     <string name="chat_all">Chat all members</string>
     <string name="chat_nearby">Chat members nearby</string>
     <string name="drrr">Drrr</string>
+
     <string name="other">Other</string>
     <string name="tumblr">Tumblr</string>
     <string name="map">Map</string>

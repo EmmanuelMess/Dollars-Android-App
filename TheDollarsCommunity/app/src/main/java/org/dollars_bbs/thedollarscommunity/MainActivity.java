@@ -40,14 +40,15 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
-	final String[] RSS = {"http://dollars-bbs.org/main/index.rss"},
+	final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
+			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-					"http://dollars-missions.tumblr.com/", "freerice.com", "https://www.kiva.org/"};
+					"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
 	ListView mainRSS;
-	boolean currentPageFromRSS, rssLoadFailed = false;
-	RSSFeed RSSFeed = null;
+	int currentPageFromRSS = -1, rssLoadFailed = -1;
+	RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
 	ProgressBar progressBar;
 	ShareActionProvider mShareActionProvider;
 	String url = "";
@@ -142,14 +143,24 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
-		currentPageFromRSS = false;
+		currentPageFromRSS = -1;
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
 		switch (id) {
 			case R.id.nav_rss_main:
-				loadMainRSS();
+				loadRSS(0);
 				break;
+			case R.id.nav_rss_missions:
+				loadRSS(1);
+				break;
+			case R.id.nav_rss_news:
+				loadRSS(2);
+				break;
+			case R.id.nav_rss_personal:
+				loadRSS(3);
+				break;
+
 			case R.id.nav_roadrunner_forum:
 				connect(WEBS[0]);
 				break;
@@ -185,11 +196,11 @@ public class MainActivity extends AppCompatActivity
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-		if (rssLoadFailed) {
-			loadMainRSS();
+		if (rssLoadFailed != -1) {
+			loadRSS(rssLoadFailed);
 		} else {
-			currentPageFromRSS = true;
-			connect(RSSFeed.getItems().get(position).getLink().toString());
+			currentPageFromRSS = position;
+			connect(RSSFeeds[position].getItems().get(position).getLink().toString());
 		}
 	}
 
@@ -199,8 +210,8 @@ public class MainActivity extends AppCompatActivity
 			if (webView.canGoBack()) {//Goes back to last page
 				webView.goBack();
 				return true;
-			} else if (currentPageFromRSS) {//Goes back to RSS list
-				loadMainRSS();
+			} else if (currentPageFromRSS != -1) {//Goes back to RSS list
+				loadRSS(currentPageFromRSS);
 				return true;
 			}
 		}
@@ -227,7 +238,7 @@ public class MainActivity extends AppCompatActivity
 	/**
 	 * Loads the RSS list, shows error if something fails.
 	 */
-	private void loadMainRSS() {
+	private void loadRSS(final int RSSNumber) {
 		webView.setVisibility(View.GONE);
 		mainRSS.setVisibility(View.VISIBLE);
 
@@ -237,14 +248,14 @@ public class MainActivity extends AppCompatActivity
 			progressBar.setVisibility(View.VISIBLE);
 
 			try {
-				if (RSSFeed == null) {
+				if (RSSFeeds[RSSNumber] == null) {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
 							try {
-								RSSFeed = new RSSReader().load(RSS[0]);
+								RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
 							} catch (RSSReaderException e) {
-								failedFetch();
+								failedFetch(RSSNumber);
 							}
 						}
 					});
@@ -253,14 +264,14 @@ public class MainActivity extends AppCompatActivity
 					t.join();  // wait for thread to finish
 				}
 			} catch (InterruptedException e) {
-				failedFetch();
+				failedFetch(RSSNumber);
 			}
 
-			if (RSSFeed != null) {
-				for (int i = 0; i < 20 && RSSFeed.getItems().size() > i; i++)
-					items.add(RSSFeed.getItems().get(i).getTitle());
+			if (RSSFeeds[RSSNumber] != null) {
+				for (int i = 0; i < 20 && RSSFeeds[RSSNumber].getItems().size() > i; i++)
+					items.add(RSSFeeds[RSSNumber].getItems().get(i).getTitle());
 
-				rssLoadFailed = false;
+				rssLoadFailed = -1;
 			} else {
 				items.add(getApplicationContext().getString(R.string.failed_feed_load));
 			}
@@ -273,10 +284,10 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	private void failedFetch() {
+	private void failedFetch(int rss) {
 		Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.failed_feed_fetch),
 				Toast.LENGTH_SHORT).show();
-		rssLoadFailed = true;
+		rssLoadFailed = rss;
 	}
 
 	private boolean showErrorIfOffline() {
