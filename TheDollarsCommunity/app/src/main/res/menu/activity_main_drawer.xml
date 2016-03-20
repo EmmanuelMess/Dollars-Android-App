@@ -24,11 +24,11 @@
         <menu>
         <item
             android:id="@+id/nav_roadrunner_forum"
-            android:icon="@drawable/ic_web_white_24dp"
+            android:icon="@drawable/ic_web_24dp"
             android:title="@string/roadrunner_forums"/>
         <item
             android:id="@+id/nav_dollars_worldwide"
-            android:icon="@drawable/ic_web_white_24dp"
+            android:icon="@drawable/ic_web_24dp"
             android:title="@string/dollars_worldwide"/>
         </menu>
     </item>
@@ -37,12 +37,16 @@
         <menu>
             <item
                 android:id="@+id/nav_chat"
-                android:icon="@drawable/ic_chat_white_24dp"
+                android:icon="@drawable/ic_chat_24dp"
                 android:title="@string/chat"/>
             <item
-                android:id="@+id/nav_chat_drrr"
-                android:icon="@drawable/ic_chat_white_24dp"
-                android:title="@string/drrr"/>
+                android:id="@+id/nav_chat_durarara"
+                android:icon="@drawable/ic_chat_24dp"
+                android:title="@string/durarara_chat"/>
+            <item
+                android:id="@+id/nav_chat_dollars_drrr"
+                android:icon="@drawable/ic_chat_24dp"
+                android:title="@string/dollars_chatroom"/>
 
         </menu>
     </item>
@@ -63,11 +67,11 @@
         <menu>
             <item
                 android:id="@+id/nav_tumblr"
-                android:icon="@drawable/ic_web_white_24dp"
+                android:icon="@drawable/ic_web_24dp"
                 android:title="@string/tumblr"/>
             <item
                 android:id="@+id/nav_map"
-                android:icon="@drawable/ic_map_white_24dp"
+                android:icon="@drawable/ic_map_24dp"
                 android:title="@string/map"/>
             <item
                 android:id="@+id/nav_free_rice"

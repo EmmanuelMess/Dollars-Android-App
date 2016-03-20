@@ -43,11 +43,11 @@ public class MainActivity extends AppCompatActivity
 	final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-					"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
+					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
 
 	WebView webView;
 	ListView mainRSS;
-	int currentPageFromRSS = -1, rssLoadFailed = -1;
+	int currentRSSFeedNum = 0, rssLoadFailed = -1;
 	RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
 	ProgressBar progressBar;
 	ShareActionProvider mShareActionProvider;
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
-		currentPageFromRSS = -1;
+		currentRSSFeedNum = -1;
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
@@ -171,20 +171,23 @@ public class MainActivity extends AppCompatActivity
 			case R.id.nav_chat:
 				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 				break;
-			case R.id.nav_chat_drrr:
+			case R.id.nav_chat_durarara:
 				connect(WEBS[2]);//TODO check url
+				break;
+			case R.id.nav_chat_dollars_drrr:
+				connect(WEBS[3]);//TODO check url
 				break;
 
 			case R.id.nav_tumblr:
-				connect(WEBS[3]);
+				connect(WEBS[4]);
 				break;
 			case R.id.nav_map:
 				break;
 			case R.id.nav_free_rice:
-				connect(WEBS[4]);//TODO check url
+				connect(WEBS[5]);
 				break;
 			case R.id.nav_kiva:
-				connect(WEBS[5]);
+				connect(WEBS[6]);
 				break;
 		}
 
@@ -199,8 +202,7 @@ public class MainActivity extends AppCompatActivity
 		if (rssLoadFailed != -1) {
 			loadRSS(rssLoadFailed);
 		} else {
-			currentPageFromRSS = position;
-			connect(RSSFeeds[position].getItems().get(position).getLink().toString());
+			connect(RSSFeeds[currentRSSFeedNum].getItems().get(position).getLink().toString());
 		}
 	}
 
@@ -210,8 +212,8 @@ public class MainActivity extends AppCompatActivity
 			if (webView.canGoBack()) {//Goes back to last page
 				webView.goBack();
 				return true;
-			} else if (currentPageFromRSS != -1) {//Goes back to RSS list
-				loadRSS(currentPageFromRSS);
+			} else if (currentRSSFeedNum != -1) {//Goes back to RSS list
+				loadRSS(currentRSSFeedNum);
 				return true;
 			}
 		}
@@ -244,8 +246,8 @@ public class MainActivity extends AppCompatActivity
 
 		if (showErrorIfOffline()) {
 			final ArrayList<String> items = new ArrayList<>();
-
 			progressBar.setVisibility(View.VISIBLE);
+			currentRSSFeedNum = RSSNumber;
 
 			try {
 				if (RSSFeeds[RSSNumber] == null) {
