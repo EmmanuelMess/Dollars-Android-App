@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity
 				connect(WEBS[4]);
 				break;
 			case R.id.nav_map:
+				// TODO: 2016-03-20 add map
 				break;
 			case R.id.nav_free_rice:
 				connect(WEBS[5]);
@@ -253,7 +254,7 @@ public class MainActivity extends AppCompatActivity
 				if (RSSFeeds[RSSNumber] == null) {
 					Thread t = new Thread(new Runnable() {
 						@Override
-						public void run() {
+						public void run() {// TODO: 2016-03-20 this thread should be an AsyncTask!
 							try {
 								RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
 							} catch (RSSReaderException e) {
@@ -328,11 +329,14 @@ public class MainActivity extends AppCompatActivity
 		return false;
 	}
 
-	private class PWebViewClient extends WebViewClient {
+	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 
+
+		//All the webs that don't require selected links to be loaded on other browser
+		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3]};
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (Uri.parse(url).getHost().equals(url) && !Utils.equal(url, WEBS[0]) && !Utils.equal(url, WEBS[1])) {
+			if (Uri.parse(url).getHost().equals(url) && isSelectWeb(url)) {
 				// This is my web site, so do not override; let my WebView load the page
 				return false;
 			}
@@ -364,6 +368,14 @@ public class MainActivity extends AppCompatActivity
 			} else {
 				webView.clearView();
 			}
+		}
+
+		private boolean isSelectWeb(String web) {
+			for(String w : SELECT_WEBS) {
+				if(Utils.equal(w, web)) return true;
+			}
+
+			return false;
 		}
 	}
 
