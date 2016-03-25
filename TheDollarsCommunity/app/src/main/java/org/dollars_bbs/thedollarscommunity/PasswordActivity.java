@@ -22,16 +22,15 @@ public class PasswordActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				TextView t = ((TextView) findViewById(R.id.textView));
-				if(t != null) {
-					if (Utils.equal(t.getText().toString(), "baccano")) {
-						Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-						//Clears the Stack so that BACK won't lead here.
-						intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);
-						startActivity(intent);
+				assert t != null;
+				if (Utils.equal(t.getText().toString(), "baccano")) {
+					Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+					//Clears the Stack so that BACK won't lead here.
+					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);
+					startActivity(intent);
 
-					} else
-						Toast.makeText(getApplicationContext(), "Wrong!", Toast.LENGTH_SHORT).show();
-				}
+				} else
+					Toast.makeText(getApplicationContext(), "Wrong!", Toast.LENGTH_SHORT).show();
 			}
 		};
 

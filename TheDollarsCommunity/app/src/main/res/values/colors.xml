@@ -3,4 +3,8 @@
     <color name="colorPrimary">#9E9E9E</color>
     <color name="colorPrimaryDark">#424242</color>
     <color name="colorAccent">#FFFFFF</color>
+
+    <!--This values override DatePicker's DO NOT DELETE-->
+    <color name="datepicker_primary">@color/colorPrimary</color>
+    <color name="datepicker_primary_dark">@color/colorPrimaryDark</color>
 </resources>

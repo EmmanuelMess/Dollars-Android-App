@@ -3,6 +3,7 @@ package org.dollars_bbs.thedollarscommunity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -169,7 +170,12 @@ public class MainActivity extends AppCompatActivity
 				break;
 
 			case R.id.nav_chat:
-				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+				SharedPreferences userData = getApplicationContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
+				boolean isRegistered = userData.getInt(getString(R.string.user_file_registered), 0) == 1;
+				if(isRegistered)
+					startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+				else
+					startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
 				break;
 			case R.id.nav_chat_durarara:
 				connect(WEBS[2]);//TODO check url

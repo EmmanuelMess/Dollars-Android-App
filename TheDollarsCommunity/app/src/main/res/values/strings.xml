@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">The Dollars Community</string>
+    <string name="user_file_key">UserData</string>
+    <string name="user_file_nick">NickData</string>
+    <string name="user_file_description">DescriptionData</string>
+    <string name="user_file_gender">GenderData</string>
+    <string name="user_file_birth_day">BirthDayData</string>
+    <string name="user_file_birth_month">BirthMonthData</string>
+    <string name="user_file_birth_year">BirthYearData</string>
+    <string name="user_file_registered">RegisteredData</string>
 
     <string name="title_activity_password">Password</string>
     <string name="connect">Connect</string>
@@ -23,7 +31,7 @@
     <string name="chats">Chats</string>
     <string name="chat">Chat</string>
     <string name="chat_all">Chat all members</string>
-    <string name="chat_nearby">Chat members nearby</string>
+
     <string name="durarara_chat">Durarara Chat</string>
     <string name="dollars_chatroom">Drrr Dollars Chatroom</string>
 
@@ -35,4 +43,33 @@
 
     <string name="failed_feed_load">LOAD FAILED\nTOUCH TO RETRY</string>
     <string name="failed_feed_fetch">Load failed!</string>
+
+    <string name="title_activity_registration">Registration</string>
+    <string name="image">Your image: </string>
+    <string name="nickname">Nickname:</string>
+    <string name="description">Describe yourself:</string>
+    <string name="gender">Gender:</string>
+    <string-array name="gender_array">
+        <item>Don\'t want to say</item>
+        <item>Male</item>
+        <item>Female</item>
+        <item>Agender / genderless</item>
+        <item>Androgyne</item>
+        <item>Bigender (bi-gender)</item>
+        <item>Cisgender / cissexual</item>
+        <item>Genderqueer / non-binary</item>
+        <item>Hijra</item>
+        <item>Pangender</item>
+        <item>Queer heterosexuality</item>
+        <item>Third gender / Third sex</item>
+        <item>Trans man</item>
+        <item>Trans woman</item>
+        <item>Trigender (tri-gender)</item>
+        <item>Two-Spirit</item>
+        <item>Other</item>
+    </string-array>
+    <string name="birth_date">Birth Date:</string>
+    <string name="register">Register</string>
+
+    <string name="chat_nearby">Chat members nearby</string>
 </resources>
