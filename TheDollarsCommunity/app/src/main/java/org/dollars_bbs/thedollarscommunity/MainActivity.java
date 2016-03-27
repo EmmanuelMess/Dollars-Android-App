@@ -3,6 +3,7 @@ package org.dollars_bbs.thedollarscommunity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -24,8 +25,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.mcsoxford.rss.RSSFeed;
@@ -40,23 +43,25 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
-	final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
+	private final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
 
-	WebView webView;
-	ListView mainRSS;
-	int currentRSSFeedNum = 0, rssLoadFailed = -1;
-	RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
-	ProgressBar progressBar;
-	ShareActionProvider mShareActionProvider;
-	String url = "";
+	private WebView webView;
+	private ListView mainRSS;
+	private int currentRSSFeedNum = 0, rssLoadFailed = -1;
+	private RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
+	private ProgressBar progressBar;
+	private ShareActionProvider mShareActionProvider;
+	private NavigationView navigationView;
+	private boolean isRegistered;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity
 			drawer.addDrawerListener(toggle);
 		toggle.syncState();
 
-		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		navigationView = (NavigationView) findViewById(R.id.nav_view);
 		assert navigationView != null;
 		navigationView.setNavigationItemSelectedListener(this);
 
@@ -96,6 +101,33 @@ public class MainActivity extends AppCompatActivity
 		navigationView.getMenu().getItem(0).setChecked(true);
 		onNavigationItemSelected(navigationView.getMenu().getItem(0));
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		View headerLayout = navigationView.getHeaderView(0);
+		assert headerLayout != null;
+		SharedPreferences userData = getApplicationContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
+		isRegistered = userData.getInt(getString(R.string.user_file_registered), 0) == 1;
+
+		if(isRegistered) {
+			Bitmap userImage = null;
+			try {
+				userImage = IO.recoverImage(IO.USER_IMAGE);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			if (userImage != null)
+				((ImageView) headerLayout.findViewById(R.id.userImage)).setImageBitmap(userImage);
+
+			((TextView) headerLayout.findViewById(R.id.nickText)).setText(userData.getString(getString(R.string.user_file_nick), "Missigno"));
+		} else {
+			headerLayout.findViewById(R.id.navHeader).setVisibility(View.GONE);
+		}
+	}
+
 
 	@Override
 	public void onBackPressed() {
@@ -169,7 +201,10 @@ public class MainActivity extends AppCompatActivity
 				break;
 
 			case R.id.nav_chat:
-				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+				if(isRegistered)
+					startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+				else
+					startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
 				break;
 			case R.id.nav_chat_durarara:
 				connect(WEBS[2]);//TODO check url
@@ -182,6 +217,7 @@ public class MainActivity extends AppCompatActivity
 				connect(WEBS[4]);
 				break;
 			case R.id.nav_map:
+				// TODO: 2016-03-20 add map
 				break;
 			case R.id.nav_free_rice:
 				connect(WEBS[5]);
@@ -232,7 +268,6 @@ public class MainActivity extends AppCompatActivity
 		webView.setVisibility(View.VISIBLE);
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
 		if (showErrorIfOffline()) {
-			this.url = url;
 			webView.loadUrl(url);
 		}
 	}
@@ -240,7 +275,7 @@ public class MainActivity extends AppCompatActivity
 	/**
 	 * Loads the RSS list, shows error if something fails.
 	 */
-	private void loadRSS(final int RSSNumber) {
+	private void loadRSS(final int RSSNumber) {// TODO: 2016-03-26 Cache to accelerate next opening
 		webView.setVisibility(View.GONE);
 		mainRSS.setVisibility(View.VISIBLE);
 
@@ -253,7 +288,7 @@ public class MainActivity extends AppCompatActivity
 				if (RSSFeeds[RSSNumber] == null) {
 					Thread t = new Thread(new Runnable() {
 						@Override
-						public void run() {
+						public void run() {// TODO: 2016-03-20 this thread should be an AsyncTask!
 							try {
 								RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
 							} catch (RSSReaderException e) {
@@ -328,11 +363,14 @@ public class MainActivity extends AppCompatActivity
 		return false;
 	}
 
-	private class PWebViewClient extends WebViewClient {
+	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 
+
+		//All the webs that don't require selected links to be loaded on other browser
+		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3]};
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (Uri.parse(url).getHost().equals(url) && !Utils.equal(url, WEBS[0]) && !Utils.equal(url, WEBS[1])) {
+			if (Uri.parse(url).getHost().equals(url) && isSelectWeb(url)) {
 				// This is my web site, so do not override; let my WebView load the page
 				return false;
 			}
@@ -364,6 +402,14 @@ public class MainActivity extends AppCompatActivity
 			} else {
 				webView.clearView();
 			}
+		}
+
+		private boolean isSelectWeb(String web) {
+			for(String w : SELECT_WEBS) {
+				if(Utils.equal(w, web)) return true;
+			}
+
+			return false;
 		}
 	}
 
