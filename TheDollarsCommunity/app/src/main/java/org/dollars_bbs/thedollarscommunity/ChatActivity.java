@@ -7,14 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-import com.kosalgeek.genasync12.AsyncResponse;
-import com.kosalgeek.genasync12.PostResponseAsyncTask;
-
-import java.util.HashMap;
-
 public class ChatActivity extends AppCompatActivity {
-
-	final String USER = "EmmanuelMess";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +23,7 @@ public class ChatActivity extends AppCompatActivity {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-						.setAction("Action", null).show();
+				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
 			}
 		});
 	}

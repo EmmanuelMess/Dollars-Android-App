@@ -1,9 +1,12 @@
 package org.dollars_bbs.thedollarscommunity;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -16,17 +19,30 @@ public class IO {
 
 	private static final String FOLDER = "The Dollars Community",
 			USER_IMAGE_NAME = "userImage.png";
+	private static final int USER_IMAGE_WIDTH = 75;
 
+	protected static Bitmap recoverImage(int dataType) throws IOException {
+		switch(dataType) {
+			case USER_IMAGE:
+				File sdCardDirectory = checkDir();
+				File image = new File(sdCardDirectory, USER_IMAGE_NAME);
+				if(image.exists())
+					return BitmapFactory.decodeFile(sdCardDirectory + File.separator + USER_IMAGE_NAME);
+				break;
+		}
+
+		return null;
+	}
+
+	@NonNull
 	protected static boolean saveImage(Bitmap b, int dataType) throws IOException {
 		switch(dataType) {
 			case USER_IMAGE://http://stackoverflow.com/a/9397142/3124150 (modified).
-				File sdCardDirectory = checkDir();
-
-				File image = new File(sdCardDirectory, USER_IMAGE_NAME);
+				File image = new File(checkDir(), USER_IMAGE_NAME);
 
 				// Encode the file as a PNG image.
 				FileOutputStream outStream = new FileOutputStream(image);
-				b.compress(Bitmap.CompressFormat.PNG, 100, outStream);// 100 to keep full quality of the image
+				b.compress(Bitmap.CompressFormat.PNG, USER_IMAGE_WIDTH, outStream);
 				outStream.flush();
 				outStream.close();
 				break;
