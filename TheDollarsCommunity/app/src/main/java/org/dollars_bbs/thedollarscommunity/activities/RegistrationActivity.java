@@ -1,14 +1,19 @@
-package org.dollars_bbs.thedollarscommunity;
+package org.dollars_bbs.thedollarscommunity.activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -17,10 +22,17 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+
+import com.fourmob.datetimepicker.date.DatePickerDialog;
+
+import org.dollars_bbs.thedollarscommunity.IO;
+import org.dollars_bbs.thedollarscommunity.R;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,14 +40,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import com.fourmob.datetimepicker.date.DatePickerDialog;
-
 public class RegistrationActivity extends AppCompatActivity {
 
 	private static final int SELECT_PHOTO = 100;
 	private static final int MAX_LIFE_LENGTH = 100,
 			MIN_LIFE_LENGTH = 7;
 	private static final String DATE_PICKER_TAG = "datepicker";
+
+	private SharedPreferences.Editor userDataEditor;
 	private static Button birthB;
 	private ImageButton imageB;
 	private ProgressBar imageProgressBar;
@@ -44,13 +56,16 @@ public class RegistrationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_registration);
+
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		assert getSupportActionBar() != null;
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+		// TODO: 2016-04-09 ask for EXTERNAL_STORAGE permission
+
 		SharedPreferences userData = getApplicationContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
-		final SharedPreferences.Editor userDataEditor = userData.edit();
+		userDataEditor = userData.edit();
 
 		imageProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 

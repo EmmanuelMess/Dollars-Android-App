@@ -74,4 +74,7 @@
 
     <string name="chat_nearby">Chat members nearby</string>
     <string name="contentdesc_user_image">User image</string>
+    <string name="separation">-</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="localization">Use localization for finding who is near you and whom you\'re near.</string>
 </resources>

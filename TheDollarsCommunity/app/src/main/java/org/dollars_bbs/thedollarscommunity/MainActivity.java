@@ -31,6 +31,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
+import org.dollars_bbs.thedollarscommunity.activities.RegistrationActivity;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSReader;
 import org.mcsoxford.rss.RSSReaderException;
@@ -64,6 +66,8 @@ public class MainActivity extends AppCompatActivity
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+
+		// TODO: 2016-04-09 ask for INTERNET permission
 
 		/*
 		//Enable in xml too!
@@ -122,7 +126,7 @@ public class MainActivity extends AppCompatActivity
 			if (userImage != null)
 				((ImageView) headerLayout.findViewById(R.id.userImage)).setImageBitmap(userImage);
 
-			((TextView) headerLayout.findViewById(R.id.nickText)).setText(userData.getString(getString(R.string.user_file_nick), "Missigno"));
+			((TextView) headerLayout.findViewById(R.id.nickText)).setText(userData.getString(getString(R.string.user_file_nick), "missingno"));
 		} else {
 			headerLayout.findViewById(R.id.navHeader).setVisibility(View.GONE);
 		}
@@ -217,7 +221,9 @@ public class MainActivity extends AppCompatActivity
 				connect(WEBS[4]);
 				break;
 			case R.id.nav_map:
-				// TODO: 2016-03-20 add map
+				Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+						Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
+				startActivity(intent);
 				break;
 			case R.id.nav_free_rice:
 				connect(WEBS[5]);

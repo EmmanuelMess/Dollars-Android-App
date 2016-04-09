@@ -15,7 +15,7 @@ public class Utils {
 	 * @param o2 Object 2
 	 * @return Object 1 == Object 2
 	 */
-	protected static boolean equal(Object o1, Object o2) {
+	public static boolean equal(Object o1, Object o2) {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && Objects.equals(o1, o2)) || o1.equals(o2);
 	}
 

@@ -1,4 +1,4 @@
-package org.dollars_bbs.thedollarscommunity;
+package org.dollars_bbs.thedollarscommunity.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,7 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import org.dollars_bbs.thedollarscommunity.MainActivity;
+import org.dollars_bbs.thedollarscommunity.R;
+import org.dollars_bbs.thedollarscommunity.Utils;
+
+import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
 public class PasswordActivity extends AppCompatActivity {
 
@@ -24,7 +29,7 @@ public class PasswordActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				TextView t = ((TextView) findViewById(R.id.textView));
 				assert t != null;
-				if (Utils.equal(t.getText().toString(), "baccano")) {
+				if (equal(t.getText().toString(), "baccano")) {
 					Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 					//Clears the Stack so that BACK won't lead here.
 					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);

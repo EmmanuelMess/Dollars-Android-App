@@ -6,7 +6,6 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -15,7 +14,7 @@ import java.io.IOException;
  *         on 2016-03-24, at 14:44.
  */
 public class IO {
-	protected static final int USER_IMAGE = 0;
+	public static final int USER_IMAGE = 0;
 
 	private static final String FOLDER = "The Dollars Community",
 			USER_IMAGE_NAME = "userImage.png";
@@ -35,7 +34,7 @@ public class IO {
 	}
 
 	@NonNull
-	protected static boolean saveImage(Bitmap b, int dataType) throws IOException {
+	public static boolean saveImage(Bitmap b, int dataType) throws IOException {
 		switch(dataType) {
 			case USER_IMAGE://http://stackoverflow.com/a/9397142/3124150 (modified).
 				File image = new File(checkDir(), USER_IMAGE_NAME);
