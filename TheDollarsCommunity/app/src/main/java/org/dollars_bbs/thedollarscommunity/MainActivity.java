@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
 import org.dollars_bbs.thedollarscommunity.activities.RegistrationActivity;
+import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSReader;
 import org.mcsoxford.rss.RSSReaderException;
@@ -48,7 +49,8 @@ public class MainActivity extends AppCompatActivity
 	private final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/"};
+					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
+					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8"};
 
 	private WebView webView;
 	private ListView mainRSS;
@@ -100,15 +102,15 @@ public class MainActivity extends AppCompatActivity
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
-		//The first item is selected at start
-		navigationView.getMenu().getItem(0).setChecked(true);
-		onNavigationItemSelected(navigationView.getMenu().getItem(0));
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		//The first item is selected
+		navigationView.getMenu().getItem(0).setChecked(true);
+		onNavigationItemSelected(navigationView.getMenu().getItem(0));
 
 		View headerLayout = navigationView.getHeaderView(0);
 		assert headerLayout != null;
@@ -179,6 +181,7 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
+		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
 		currentRSSFeedNum = -1;
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
@@ -231,6 +234,13 @@ public class MainActivity extends AppCompatActivity
 			case R.id.nav_kiva:
 				connect(WEBS[6]);
 				break;
+
+			case R.id.nav_settings:
+				startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
+				break;
+			case R.id.nav_feedback:
+				connect(WEBS[7]);//TODO check url
+				break;
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -272,7 +282,6 @@ public class MainActivity extends AppCompatActivity
 	private void connect(String url) {
 		mainRSS.setVisibility(View.GONE);
 		webView.setVisibility(View.VISIBLE);
-		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
 		if (showErrorIfOffline()) {
 			webView.loadUrl(url);
 		}
