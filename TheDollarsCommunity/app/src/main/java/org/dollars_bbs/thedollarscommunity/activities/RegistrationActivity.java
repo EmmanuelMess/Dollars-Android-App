@@ -26,7 +26,6 @@ import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;

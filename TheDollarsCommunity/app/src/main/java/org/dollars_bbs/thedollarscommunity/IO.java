@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContentResolverCompat;
-import android.view.View;
 
 import java.io.File;
 import java.io.FileNotFoundException;
