@@ -37,7 +37,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="center"
-            android:src="@drawable/ic_mood_24dp"
+            app:srcCompat="@drawable/ic_mood_24dp"
             tools:ignore="ContentDescription"/>
 
         <ScrollView
@@ -61,7 +61,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="center"
-            android:src="@drawable/ic_send_24dp"
+            app:srcCompat="@drawable/ic_send_24dp"
             tools:ignore="ContentDescription"/>
 
     </LinearLayout>

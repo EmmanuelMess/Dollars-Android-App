@@ -2,9 +2,11 @@ package org.dollars_bbs.thedollarscommunity.activities;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -13,11 +15,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -39,8 +45,10 @@ import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
 import com.vanniktech.emoji.listeners.OnSoftKeyboardCloseListener;
 
 import org.dollars_bbs.thedollarscommunity.BuildConfig;
+import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +59,9 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	private static final String SEVER = "http://srv1.androidcreator.com/srv/enviarmensaje.php";
 	private final String[][] TABS = {{"GLOBAL", "LOCAL", "PRIVATE"}, {"GLOBAL", "PRIVATE"}};
 	private final int REQUEST_ACCESS_COARSE_LOCATION = 1;
+	private static final int SELECT_PHOTO = 2;
 
+	private ShareActionProvider mShareActionProvider;
 	private boolean hasLocalizationAccess;
 	private static EmojiPopup emojiPopup;
 	private static ImageView emojiButton;
@@ -101,9 +111,61 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	}
 
 	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.chat, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+
+		switch (id) {
+			case R.id.action_attach:
+				Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+				photoPickerIntent.setType("image/*");
+				startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+				return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+		super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+		switch(requestCode) {
+			case SELECT_PHOTO:
+				if(resultCode == RESULT_OK){
+					try {
+						Uri selectedImage = imageReturnedIntent.getData();
+						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
+						(new IO.SaveImageAsyncTask()).execute(userImage);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+		}
+	}
+
+	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		hasLocalizationAccess = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 		mCollectionPagerAdapter.notifyDataSetChanged();
+	}
+
+	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
+		@Override
+		protected void onPostExecute(Bitmap o) {
+			if (failed == null);//TODO send(setImageBitmap(o));
+			else
+				failed.printStackTrace();
+		}
 	}
 
 	public class PCollectionPagerAdapter extends FragmentPagerAdapter {
@@ -123,7 +185,6 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 		@Override
 		public int getCount() {
-
 			if (hasLocalizationAccess)
 				return 3;
 			else return 2;

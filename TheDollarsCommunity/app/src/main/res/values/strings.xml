@@ -72,6 +72,7 @@
     <string name="birth_date">Birth Date:</string>
     <string name="register">Register</string>
 
+    <string name="action_attach">Attach</string>
     <string name="chat_nearby">Chat members nearby</string>
     <string name="contentdesc_user_image">User image</string>
     <string name="separation">-</string>

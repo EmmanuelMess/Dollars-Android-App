@@ -11,12 +11,11 @@
         android:icon="@mipmap/dollars_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <activity
             android:name=".activities.PasswordActivity"
             android:configChanges="orientation"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -26,15 +25,13 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:label="@string/app_name">
         </activity>
         <activity
             android:name=".activities.ChatActivity"
             android:configChanges="orientation"
             android:label="@string/chat"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
+            android:parentActivityName=".MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
@@ -45,8 +42,7 @@
             android:name=".activities.RegistrationActivity"
             android:configChanges="orientation"
             android:label="@string/title_activity_registration"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
+            android:parentActivityName=".MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
@@ -57,8 +53,7 @@
             android:name=".activities.ProfileActivity"
             android:configChanges="orientation"
             android:label="@string/title_activity_profile"
-            android:parentActivityName=".activities.ChatActivity"
-            android:theme="@style/AppTheme">
+            android:parentActivityName=".activities.ChatActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data

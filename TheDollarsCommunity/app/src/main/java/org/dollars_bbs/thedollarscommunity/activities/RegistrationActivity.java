@@ -42,7 +42,7 @@ import java.util.Locale;
 
 public class RegistrationActivity extends AppCompatActivity {
 
-	private static final int SELECT_PHOTO = 100;
+	private static final int SELECT_PHOTO = 1;
 	private static final int MAX_LIFE_LENGTH = 100,
 			MIN_LIFE_LENGTH = 7;
 	private static final String DATE_PICKER_TAG = "datepicker";
@@ -176,8 +176,8 @@ public class RegistrationActivity extends AppCompatActivity {
 				if(resultCode == RESULT_OK){
 					try {
 						Uri selectedImage = imageReturnedIntent.getData();
-						Bitmap userImage = decodeUri(selectedImage, 100, true);
-						(new SaveAsyncTask()).execute(userImage);
+						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
+						(new SpinnerSaveImageAsyncTask()).execute(userImage);
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}
@@ -185,79 +185,26 @@ public class RegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	/**
-	 * Downsamples images: http://stackoverflow.com/a/5086706/3124150 (modified).
-	 *
-	 * @param selectedImage image to downsample
-	 * @param REQUIRED_SIZE the size you want
-	 * @param isWidth if the REQUIRED_SIZE value is the height
-	 * @return downsample'd bitmap
-	 * @throws FileNotFoundException if there's no image
-	 */
-	private Bitmap decodeUri(Uri selectedImage, final int REQUIRED_SIZE, boolean isWidth) throws FileNotFoundException {
-		// Decode image size
-		BitmapFactory.Options o = new BitmapFactory.Options();
-		o.inJustDecodeBounds = true;
-		BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o);
-
-		// Find the correct scale value. It should be the power of 2.
-		int width_tmp = o.outWidth, height_tmp = o.outHeight;
-		int scale = 1;
-		while (true) {
-			if(isWidth) {
-				if (width_tmp/2 < REQUIRED_SIZE) {
-					break;
-				}
-			} else {
-				if(height_tmp/2 < REQUIRED_SIZE) {
-					break;
-				}
-			}
-			width_tmp /= 2;
-			height_tmp /= 2;
-			scale *= 2;
-		}
-
-		// Decode with inSampleSize
-		BitmapFactory.Options o2 = new BitmapFactory.Options();
-		o2.inSampleSize = scale;
-		return BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o2);
-
-	}
-
-	private class SaveAsyncTask extends AsyncTask<Bitmap, Void, Bitmap> {
-		private Exception failed;
-
+	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
 		@Override
 		protected void onPreExecute() {
 			imageProgressBar.setVisibility(View.VISIBLE);
 		}
 
 		@Override
-		protected Bitmap doInBackground(Bitmap... params) {
-			try {
-				IO.saveImage(params[0], IO.USER_IMAGE);
-			} catch (IOException e) {
-				failed = e;
-				return null;
-			}
-			return params[0];
-		}
-
-		@Override
 		protected void onPostExecute(Bitmap o) {
-			imageProgressBar.setVisibility(View.GONE);
-
 			if(failed == null)
 				imageB.setImageBitmap(o);
 			else
 				failed.printStackTrace();
 
+			imageProgressBar.setVisibility(View.GONE);
 			super.onPostExecute(o);
 		}
+
 	}
 
-	private String date(Calendar d, SharedPreferences.Editor editor) {
+		private String date(Calendar d, SharedPreferences.Editor editor) {
 		editor.putInt(getString(R.string.user_file_birth_day), d.get(Calendar.DAY_OF_MONTH));
 		editor.putInt(getString(R.string.user_file_birth_month), d.get(Calendar.MONTH));
 		editor.putInt(getString(R.string.user_file_birth_year), d.get(Calendar.YEAR));
