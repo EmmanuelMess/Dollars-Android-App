@@ -1,19 +1,13 @@
 package org.dollars_bbs.thedollarscommunity.activities;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -22,9 +16,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -86,7 +77,7 @@ public class RegistrationActivity extends AppCompatActivity {
 		final Button registerB = (Button) findViewById(R.id.registerButton);
 		assert registerB != null;
 
-		EditText nicknameT = (EditText) findViewById(R.id.nickEdit);
+		TextInputEditText nicknameT = (TextInputEditText) findViewById(R.id.nickEdit);
 		assert nicknameT != null;
 
 		nicknameT.addTextChangedListener(new TextWatcher() {
@@ -94,6 +85,22 @@ public class RegistrationActivity extends AppCompatActivity {
 			public void afterTextChanged(Editable s) {
 				registerB.setEnabled(s.length() != 0);
 				userDataEditor.putString(getString(R.string.user_file_nick), s.toString());
+			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
+		});
+
+		TextInputEditText descriptionT = (TextInputEditText) findViewById(R.id.descriptionEdit);
+		assert descriptionT != null;
+
+		descriptionT.addTextChangedListener(new TextWatcher() {
+
+			public void afterTextChanged(Editable s) {
+				userDataEditor.putString(getString(R.string.user_file_description), s.toString());
 			}
 
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {

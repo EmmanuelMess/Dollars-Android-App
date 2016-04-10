@@ -46,10 +46,10 @@
     <string name="failed_feed_fetch">Load failed!</string>
 
     <string name="title_activity_registration">Registration</string>
-    <string name="image">Your image: </string>
-    <string name="nickname">Nickname:</string>
-    <string name="description">Describe yourself:</string>
-    <string name="gender">Gender:</string>
+    <string name="image">Your image</string>
+    <string name="nickname">Nickname</string>
+    <string name="description">Describe yourself</string>
+    <string name="gender">Gender</string>
     <string-array name="gender_array">
         <item>Don\'t want to say</item>
         <item>Male</item>
@@ -69,7 +69,7 @@
         <item>Two-Spirit</item>
         <item>Other</item>
     </string-array>
-    <string name="birth_date">Birth Date:</string>
+    <string name="birth_date">Birth Date</string>
     <string name="register">Register</string>
 
     <string name="action_attach">Attach</string>
