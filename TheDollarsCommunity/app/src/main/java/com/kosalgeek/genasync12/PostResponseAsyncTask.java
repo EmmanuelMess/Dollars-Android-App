@@ -54,7 +54,7 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
     private Context context;
     private HashMap<String, String> postData = new HashMap<String, String>();
     private String loadingMessage = "Loading...";
-    private boolean showLoadingMessage = true;
+    private boolean showLoadingMessage = false;
 
 
     private ExceptionHandler exceptionHandler;
@@ -62,19 +62,16 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
 
     private Exception exception = new Exception();
 
-    //Constructor
     public PostResponseAsyncTask(Context context,
-                                 AsyncResponse asyncResponse){
+                                 AsyncResponse asyncResponse) {
         this.asyncResponse = asyncResponse;
         this.context = context;
     }
 
-
-    //Constructor
     public PostResponseAsyncTask(Context context,
                                  boolean showLoadingMessage,
                                  AsyncResponse asyncResponse
-                                 ){
+    ) {
         this.asyncResponse = asyncResponse;
         this.context = context;
         this.showLoadingMessage = showLoadingMessage;
@@ -82,18 +79,16 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
 
     public PostResponseAsyncTask(Context context,
                                  HashMap<String, String> postData,
-                                 AsyncResponse asyncResponse){
+                                 AsyncResponse asyncResponse) {
         this.context = context;
         this.postData = postData;
         this.asyncResponse = asyncResponse;
     }
 
-
     public PostResponseAsyncTask(Context context,
                                  HashMap<String, String> postData,
                                  boolean showLoadingMessage,
-                                 AsyncResponse asyncResponse
-                                 ){
+                                 AsyncResponse asyncResponse) {
         this.context = context;
         this.postData = postData;
         this.asyncResponse = asyncResponse;
@@ -102,7 +97,7 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
 
     public PostResponseAsyncTask(Context context,
                                  String loadingMessage,
-                                 AsyncResponse asyncResponse){
+                                 AsyncResponse asyncResponse) {
         this.context = context;
         this.loadingMessage = loadingMessage;
         this.asyncResponse = asyncResponse;
@@ -111,15 +106,13 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
     public PostResponseAsyncTask(Context context,
                                  HashMap<String, String> postData,
                                  String loadingMessage,
-                                 AsyncResponse asyncResponse){
+                                 AsyncResponse asyncResponse) {
         this.context = context;
         this.postData = postData;
         this.loadingMessage = loadingMessage;
         this.asyncResponse = asyncResponse;
     }
-    //End Constructor
 
-    //Setter and Getter
     public void setLoadingMessage(String loadingMessage) {
         this.loadingMessage = loadingMessage;
     }
@@ -152,31 +145,26 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
         return asyncResponse;
     }
 
-
-    //End Setter & Getter
-
-
-
     @Override
     protected void onPreExecute() {
-        if(showLoadingMessage){
+        if (showLoadingMessage) {
             progressDialog = new ProgressDialog(context);
             progressDialog.setMessage(loadingMessage);
             progressDialog.show();
         }
 
         super.onPreExecute();
-    }//onPreExecute
+    }
 
     @Override
-    protected String doInBackground(String... urls){
+    protected String doInBackground(String... urls) {
 
         String result = "";
-        for(int i = 0; i <= 0; i++){
+        for (int i = 0; i <= 0; i++) {
             result = invokePost(urls[i], postData);
         }
         return result;
-    }//doInBackground
+    }
 
     private String invokePost(String requestURL, HashMap<String, String> postDataParams) {
 
@@ -205,40 +193,36 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
                 String line;
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 while ((line = br.readLine()) != null) {
-                    response+=line;
+                    response += line;
                 }
-            }
-            else {
-                response="";
+            } else {
+                response = "";
 
                 Log.d("PostResponseAsyncTask", responseCode + "");
             }
         } catch (MalformedURLException e) {
             Log.d("PostResponseAsyncTask", "MalformedURLException Error: " + e.toString());
             exception = e;
-        }
-        catch (ProtocolException e) {
+        } catch (ProtocolException e) {
             Log.d("PostResponseAsyncTask", "ProtocolException Error: " + e.toString());
             exception = e;
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             Log.d("PostResponseAsyncTask", "UnsupportedEncodingException Error: " + e.toString());
             exception = e;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.d("PostResponseAsyncTask", "IOException Error: " + e.toString());
             exception = e;
         }
 
         return response;
 
-    }//performPostCall
+    }
 
     private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
         StringBuilder result = new StringBuilder();
         boolean first = true;
 
-        for(Map.Entry<String, String> entry : params.entrySet()){
+        for (Map.Entry<String, String> entry : params.entrySet()) {
             if (first)
                 first = false;
             else
@@ -250,42 +234,39 @@ public class PostResponseAsyncTask extends AsyncTask<String, Void, String> {
         }
 
         return result.toString();
-    }//getPostDataString
+    }
 
     @Override
     protected void onPostExecute(String result) {
-        if(showLoadingMessage){
-            if(progressDialog.isShowing()){
+        if (showLoadingMessage) {
+            if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
         }
 
         result = result.trim();
 
-        if(asyncResponse != null){
+        if (asyncResponse != null) {
             asyncResponse.processFinish(result);
         }
 
-        if(exception != null) {
-            if(exceptionHandler != null){
+        if (exception != null) {
+            if (exceptionHandler != null) {
                 exceptionHandler.handleException(exception);
             }
-            if(eachExceptionsHandler != null){
+            if (eachExceptionsHandler != null) {
                 Log.d(LOG, "" + exception.getClass().getSimpleName());
-                if(exception instanceof MalformedURLException){
+                if (exception instanceof MalformedURLException) {
                     eachExceptionsHandler.handleMalformedURLException((MalformedURLException) exception);
-                }
-                else if(exception instanceof ProtocolException){
+                } else if (exception instanceof ProtocolException) {
                     eachExceptionsHandler.handleProtocolException((ProtocolException) exception);
-                }
-                else if(exception instanceof UnsupportedEncodingException){
+                } else if (exception instanceof UnsupportedEncodingException) {
                     eachExceptionsHandler.handleUnsupportedEncodingException((UnsupportedEncodingException) exception);
-                }
-                else if(exception instanceof IOException){
+                } else if (exception instanceof IOException) {
                     eachExceptionsHandler.handleIOException((IOException) exception);
                 }
             }
         }
 
-    }//onPostExecute
+    }
 }
