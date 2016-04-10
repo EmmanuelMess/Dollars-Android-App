@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import org.dollars_bbs.thedollarscommunity.MainActivity;
 import org.dollars_bbs.thedollarscommunity.R;
-import org.dollars_bbs.thedollarscommunity.Utils;
 
 import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
