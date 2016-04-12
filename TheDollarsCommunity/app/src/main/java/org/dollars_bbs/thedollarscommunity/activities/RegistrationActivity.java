@@ -1,14 +1,13 @@
-package org.dollars_bbs.thedollarscommunity;
+package org.dollars_bbs.thedollarscommunity.activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -17,25 +16,28 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 
+import com.fourmob.datetimepicker.date.DatePickerDialog;
+
+import org.dollars_bbs.thedollarscommunity.IO;
+import org.dollars_bbs.thedollarscommunity.R;
+
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import com.fourmob.datetimepicker.date.DatePickerDialog;
-
 public class RegistrationActivity extends AppCompatActivity {
 
-	private static final int SELECT_PHOTO = 100;
+	private static final int SELECT_PHOTO = 1;
 	private static final int MAX_LIFE_LENGTH = 100,
 			MIN_LIFE_LENGTH = 7;
 	private static final String DATE_PICKER_TAG = "datepicker";
+
+	private SharedPreferences.Editor userDataEditor;
 	private static Button birthB;
 	private ImageButton imageB;
 	private ProgressBar imageProgressBar;
@@ -44,13 +46,16 @@ public class RegistrationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_registration);
+
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		assert getSupportActionBar() != null;
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+		// TODO: 2016-04-09 ask for EXTERNAL_STORAGE permission
+
 		SharedPreferences userData = getApplicationContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
-		final SharedPreferences.Editor userDataEditor = userData.edit();
+		userDataEditor = userData.edit();
 
 		imageProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
@@ -71,7 +76,7 @@ public class RegistrationActivity extends AppCompatActivity {
 		final Button registerB = (Button) findViewById(R.id.registerButton);
 		assert registerB != null;
 
-		EditText nicknameT = (EditText) findViewById(R.id.nickEdit);
+		TextInputEditText nicknameT = (TextInputEditText) findViewById(R.id.nickEdit);
 		assert nicknameT != null;
 
 		nicknameT.addTextChangedListener(new TextWatcher() {
@@ -79,6 +84,22 @@ public class RegistrationActivity extends AppCompatActivity {
 			public void afterTextChanged(Editable s) {
 				registerB.setEnabled(s.length() != 0);
 				userDataEditor.putString(getString(R.string.user_file_nick), s.toString());
+			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
+		});
+
+		TextInputEditText descriptionT = (TextInputEditText) findViewById(R.id.descriptionEdit);
+		assert descriptionT != null;
+
+		descriptionT.addTextChangedListener(new TextWatcher() {
+
+			public void afterTextChanged(Editable s) {
+				userDataEditor.putString(getString(R.string.user_file_description), s.toString());
 			}
 
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -161,8 +182,8 @@ public class RegistrationActivity extends AppCompatActivity {
 				if(resultCode == RESULT_OK){
 					try {
 						Uri selectedImage = imageReturnedIntent.getData();
-						Bitmap userImage = decodeUri(selectedImage, 100, true);
-						(new SaveAsyncTask()).execute(userImage);
+						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
+						(new SpinnerSaveImageAsyncTask()).execute(userImage);
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}
@@ -170,79 +191,26 @@ public class RegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	/**
-	 * Downsamples images: http://stackoverflow.com/a/5086706/3124150 (modified).
-	 *
-	 * @param selectedImage image to downsample
-	 * @param REQUIRED_SIZE the size you want
-	 * @param isWidth if the REQUIRED_SIZE value is the height
-	 * @return downsample'd bitmap
-	 * @throws FileNotFoundException if there's no image
-	 */
-	private Bitmap decodeUri(Uri selectedImage, final int REQUIRED_SIZE, boolean isWidth) throws FileNotFoundException {
-		// Decode image size
-		BitmapFactory.Options o = new BitmapFactory.Options();
-		o.inJustDecodeBounds = true;
-		BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o);
-
-		// Find the correct scale value. It should be the power of 2.
-		int width_tmp = o.outWidth, height_tmp = o.outHeight;
-		int scale = 1;
-		while (true) {
-			if(isWidth) {
-				if (width_tmp/2 < REQUIRED_SIZE) {
-					break;
-				}
-			} else {
-				if(height_tmp/2 < REQUIRED_SIZE) {
-					break;
-				}
-			}
-			width_tmp /= 2;
-			height_tmp /= 2;
-			scale *= 2;
-		}
-
-		// Decode with inSampleSize
-		BitmapFactory.Options o2 = new BitmapFactory.Options();
-		o2.inSampleSize = scale;
-		return BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o2);
-
-	}
-
-	private class SaveAsyncTask extends AsyncTask<Bitmap, Void, Bitmap> {
-		private Exception failed;
-
+	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
 		@Override
 		protected void onPreExecute() {
 			imageProgressBar.setVisibility(View.VISIBLE);
 		}
 
 		@Override
-		protected Bitmap doInBackground(Bitmap... params) {
-			try {
-				IO.saveImage(params[0], IO.USER_IMAGE);
-			} catch (IOException e) {
-				failed = e;
-				return null;
-			}
-			return params[0];
-		}
-
-		@Override
 		protected void onPostExecute(Bitmap o) {
-			imageProgressBar.setVisibility(View.GONE);
-
 			if(failed == null)
 				imageB.setImageBitmap(o);
 			else
 				failed.printStackTrace();
 
+			imageProgressBar.setVisibility(View.GONE);
 			super.onPostExecute(o);
 		}
+
 	}
 
-	private String date(Calendar d, SharedPreferences.Editor editor) {
+		private String date(Calendar d, SharedPreferences.Editor editor) {
 		editor.putInt(getString(R.string.user_file_birth_day), d.get(Calendar.DAY_OF_MONTH));
 		editor.putInt(getString(R.string.user_file_birth_month), d.get(Calendar.MONTH));
 		editor.putInt(getString(R.string.user_file_birth_year), d.get(Calendar.YEAR));

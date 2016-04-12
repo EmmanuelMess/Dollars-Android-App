@@ -1,4 +1,4 @@
-package org.dollars_bbs.thedollarscommunity;
+package org.dollars_bbs.thedollarscommunity.activities;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -7,12 +7,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-public class ChatActivity extends AppCompatActivity {
+import org.dollars_bbs.thedollarscommunity.R;
+
+public class ProfileActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_chat);
+		setContentView(R.layout.activity_profile);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		assert getSupportActionBar() != null;
@@ -23,8 +25,10 @@ public class ChatActivity extends AppCompatActivity {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				// TODO: 2016-03-30 private chat
 				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
 			}
 		});
 	}
+
 }
