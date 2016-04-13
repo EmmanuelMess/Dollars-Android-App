@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
-					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8"};
+					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
 
 	private WebView webView;
 	private ListView mainRSS;
