@@ -80,7 +80,6 @@ public class RegistrationActivity extends AppCompatActivity {
 		assert nicknameT != null;
 
 		nicknameT.addTextChangedListener(new TextWatcher() {
-
 			public void afterTextChanged(Editable s) {
 				registerB.setEnabled(s.length() != 0);
 				userDataEditor.putString(getString(R.string.user_file_nick), s.toString());
@@ -97,7 +96,6 @@ public class RegistrationActivity extends AppCompatActivity {
 		assert descriptionT != null;
 
 		descriptionT.addTextChangedListener(new TextWatcher() {
-
 			public void afterTextChanged(Editable s) {
 				userDataEditor.putString(getString(R.string.user_file_description), s.toString());
 			}
