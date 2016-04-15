@@ -2,16 +2,17 @@
 	include_once("connection.php");
 
 	if(isset($_POST['image']) && isset($_POST['nick']) && isset($_POST['birth_day']) 
-	   && isset($_POST['birth_month']) && isset($_POST['birth_year'])
-	   && isset($_POST['gender'])) {
+	   && isset($_POST['birth_month']) && isset($_POST['birth_year']) 
+	   && isset($_POST['description']) && isset($_POST['gender'])) {
 		$image = $_POST['image'];
 		$nick = $_POST['nick'];
 		$birth_day = $_POST['birth_day'];
 		$birth_month = $_POST['birth_month'];
 		$birth_year = $_POST['birth_year'];
+		$desc = $_POST['description'];
 		$gender = $_POST['gender'];
 
-		$query = "INSET INTO $users_table VALUES ($image, '$nick', $birth_day, $birth_month, $birth_year, '$gender'";
+		$query = "INSET INTO $users_table (nick, avatar, birthDay, birthMonth, birthYear, description, gender) VALUES ('$nick', $image, $birth_day, $birth_month, $birth_year, '$desc', '$gender'";
 
 		$result = mysqli_query($conn, $query);
 

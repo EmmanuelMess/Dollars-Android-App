@@ -32,9 +32,11 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.gson.annotations.SerializedName;
+import com.kosalgeek.android.json.JsonConverter;
 import com.kosalgeek.genasync12.AsyncResponse;
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
 import com.vanniktech.emoji.EmojiEditText;
@@ -48,6 +50,7 @@ import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,10 +58,12 @@ import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
 public class ChatActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
-	private static final String SEVER = "http://srv1.androidcreator.com/srv/enviarmensaje.php";
+	private static final String SEVER = "http://srv1.androidcreator.com/srv/";// TODO: 2016-04-15 CORRECT!!!
+	private static final String[] PHPs = {"send_msg.php"};
 	private final String[][] TABS = {{"GLOBAL", "LOCAL", "PRIVATE"}, {"GLOBAL", "PRIVATE"}};
 	private final int REQUEST_ACCESS_COARSE_LOCATION = 1;
 	private static final int SELECT_PHOTO = 2;
+	private static final int CHAT_REFRESH = 1000;
 
 	private ShareActionProvider mShareActionProvider;
 	private boolean hasLocalizationAccess;
@@ -118,8 +123,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
+		// Handle action bar item clicks here. The action bar will automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 
@@ -138,9 +142,9 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
 		super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-		switch(requestCode) {
+		switch (requestCode) {
 			case SELECT_PHOTO:
-				if(resultCode == RESULT_OK){
+				if (resultCode == RESULT_OK) {
 					try {
 						Uri selectedImage = imageReturnedIntent.getData();
 						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
@@ -161,7 +165,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
 		@Override
 		protected void onPostExecute(Bitmap o) {
-			if (failed == null);//TODO send(setImageBitmap(o));
+			if (failed == null) ;//TODO send(setImageBitmap(o));
 			else
 				failed.printStackTrace();
 		}
@@ -198,11 +202,13 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	// Instances of this class are fragments representing a single object in our collection.
 	public static class ChatFragment extends Fragment implements AdapterView.OnItemClickListener, AsyncResponse {
 		public static final int CHAT = 0, USER_LIST = 1;
-
 		public static final String ARG_ITEM = "item";
 
+		private ArrayList<String> nicks = new ArrayList<>();
+		private ArrayList<String> msgs = new ArrayList<>();
 		private int FRAGMENT_TYPE;
 		private SharedPreferences userData;
+		private ChatItemAdapter mAdapter;
 
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
@@ -226,8 +232,12 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				assert msgingLayout != null;
 				msgingLayout.setVisibility(View.VISIBLE);
 
-				emojiButton = (ImageView) view.findViewById(R.id.main_activity_emoji);
+				mAdapter = new ChatItemAdapter(getContext(), R.layout.item_chat, null, nicks, msgs);
+				ListView chatBox = (ListView) view.findViewById(R.id.chatView);
+				chatBox.setAdapter(mAdapter);
+				chatBox.setOnItemClickListener(this);
 
+				emojiButton = (ImageView) view.findViewById(R.id.main_activity_emoji);
 				emojiButton.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(final View v) {
@@ -276,22 +286,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 						send("");
 					}
 				});
-			}
-		}
 
-		@Override
-		public void processFinish(String jsonString) { // TODO: 2016-03-27 this creates a "Loading" popup
-			if (getView() != null) {
-				final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
-				assert chatBox != null;
-
-				/*
-				ArrayList<ModelClass> msgs = new JsonConverter<ModelClass>().toArrayList(jsonString, ModelClass.class);// TODO: 2016-03-27 this prints THE HOLE TABLE!
-				final ChatItemAdapter adapter = new ChatItemAdapter(getApplicationContext(), R.layout.item_chat, msgs.get(0), msgs.get(1), msgs.get(2));
-				chatBox.setAdapter(adapter);
-				hatBox.setOnItemClickListener(this);
-				notifyDataSetChanged();
-				*/
+				new ChatRefresherThread().run();
 			}
 		}
 
@@ -308,53 +304,129 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		private void send(String msg) {
 			if (BuildConfig.DEBUG && FRAGMENT_TYPE != CHAT) throw new AssertionError();
 			if (getView() != null && !equal(msg.replace(" ", ""), "")) {
-				// TODO: 2016-03-27 send message
 				((EditText) getView().findViewById(R.id.emojiEditText)).setText("");
 				HashMap<String, String> data = new HashMap<>();
+				data.put("time", Float.toString(System.currentTimeMillis()));
+				data.put("chat", "global");
 				data.put("nick", userData.getString(getString(R.string.user_file_nick), "missingno"));
-				data.put("msg", "");
+				data.put("isText", Integer.toString(0));
+				data.put("msg", msg);
 
 				PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, this);
-				t.execute(SEVER);
+				t.execute(SEVER + PHPs[0]);
 			}
 		}
 
-		private class ModelClass {
+		@Override
+		public void processFinish(String jsonString) {
+			// TODO: 2016-04-15 check if msg was sent
+		}
 
-			@SerializedName("avatar")
-			public String avatar;
+		private class ChatRefresherThread implements Runnable, AsyncResponse {
+			private long time = 0;
+			private boolean stop;
+			private boolean finished = true;
+			private int lastId = 0,
+					msgsNeeded = 0;
 
-			@SerializedName("nickname")
-			public String nickname;
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						if ((time <= System.currentTimeMillis() - CHAT_REFRESH || msgsNeeded != 0) && finished) {
+							finished = false;
+							HashMap<String, String> data = new HashMap<>();
+							if (msgsNeeded == 0)
+								data.put("lastId", "0");
+							else
+								data.put("amount", Integer.toString(msgsNeeded));
 
-			@SerializedName("message")
-			public String message;
+							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, this);
+							t.execute(SEVER + PHPs[0]);
+							time = System.currentTimeMillis();
+						} else if (!stop) wait();
+						else if (stop) return;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			@Override
+			public void processFinish(String jsonString) {
+				final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
+				assert chatBox != null;
+
+				if (msgsNeeded == 0) {
+					ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
+					msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+				} else {
+					ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
+					lastId = chat.get(chat.size() - 1).id;
+					msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+					for (int i = 0; i < chat.size(); i++) {
+						nicks.add(chat.get(i).nick);
+
+						if (chat.get(i).isImage) {
+							// TODO: 2016-04-15
+						} else {
+							msgs.add(chat.get(i).message);
+						}
+					}
+
+					mAdapter.notifyDataSetChanged();
+					finished = true;
+				}
+			}
+
+			public void stop() {
+				stop = true;
+			}
+
+			private class NewMsgsModelClass {
+				@SerializedName("id")
+				public int id;
+			}
+
+			private class ChatMsgModelClass {
+				@SerializedName("id")
+				public int id;
+
+				@SerializedName("nick")
+				public String nick;
+
+				@SerializedName("isImage")
+				public boolean isImage;
+
+				@SerializedName("msg")
+				public String message;
+			}
 		}
 
 		private class ChatItemAdapter extends ArrayAdapter<String> {
 
 			HashMap<String, Integer> mExtrasMap = new HashMap<>();
-			Bitmap[] mImages = null;
-			String[] mNicks = null;
+			List<Bitmap> mImages = null;
+			List<String> mNicks = null;
 			int[] mDistances = null;
 			/**
 			 * Extras can be used either as message or description
 			 */
-			String[] mExtras = null;
+			List<String> mExtras = null;
 
-			public ChatItemAdapter(Context context, int textViewResourceId, Bitmap[] images, String[] nicks, List<String> msgs) {
+			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, List<String> msgs) {
 				this(context, textViewResourceId, images, nicks, null, msgs);
 			}
 
-			public ChatItemAdapter(Context context, int textViewResourceId, Bitmap[] images, String[] nicks, int[] distances, List<String> extras) {
+			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, int[] distances, List<String> extras) {
 				super(context, textViewResourceId, extras);
 				mImages = images;
 				mNicks = nicks;
 				if (distances != null)
 					mDistances = distances;
-				mExtras = extras.toArray(new String[extras.size()]);
+				mExtras = extras;
 
-				for (int i = 0; i < extras.size(); ++i)
+				for (int i = 0; i < extras.size(); i++)
 					mExtrasMap.put(extras.get(i), i);
 			}
 
@@ -363,11 +435,11 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				View rowView = convertView != null? convertView:inflater.inflate(R.layout.item_chat, parent, false);//May need to check for appropriate type
 
-				ImageView avatar = (ImageView) rowView.findViewById(R.id.avatarImage);
-				avatar.setImageBitmap(mImages[position]);
+				//ImageView avatar = (ImageView) rowView.findViewById(R.id.avatarImage);
+				//avatar.setImageBitmap(mImages[position]);
 
 				TextView nick = (TextView) rowView.findViewById(R.id.nickView);
-				nick.setText(mNicks[position]);
+				nick.setText(mNicks.get(position));
 
 				if (mDistances != null) {
 					rowView.findViewById(R.id.distanceLayout).setVisibility(View.VISIBLE);
@@ -376,7 +448,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				}
 
 				TextView msg = (TextView) rowView.findViewById(R.id.extraView);
-				msg.setText(mExtras[position]);
+				msg.setText(mExtras.get(position));
 
 				return rowView;
 			}
