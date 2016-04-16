@@ -57,8 +57,8 @@ import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
 public class ChatActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
-	private static final String SEVER = "http://srv1.androidcreator.com/srv/";// TODO: 2016-04-15 CORRECT!!!
-	private static final String[] PHPs = {"send_msg.php"};
+	private static final String SEVER = "http://roadrunner-forums.com/boards/App/";// TODO: 2016-04-15 CORRECT!!!
+	private static final String[] PHPs = {"chat.php", "send_msg.php"};
 	private final String[][] TABS = {{"GLOBAL", "LOCAL", "PRIVATE"}, {"GLOBAL", "PRIVATE"}};
 	private final int REQUEST_ACCESS_COARSE_LOCATION = 1;
 	private static final int SELECT_PHOTO = 2;
@@ -66,6 +66,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 	private ShareActionProvider mShareActionProvider;
 	private boolean hasLocalizationAccess;
+	private static ChatFragment.ChatRefresherThread thread;
 	private static EmojiPopup emojiPopup;
 	private static ImageView emojiButton;
 
@@ -244,7 +245,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 					}
 				});
 
-				EmojiEditText msgText = (EmojiEditText) view.findViewById(R.id.emojiEditText);
+				final EmojiEditText msgText = (EmojiEditText) view.findViewById(R.id.emojiEditText);
 				assert msgText != null;
 				msgText.setVisibility(View.VISIBLE);
 
@@ -269,12 +270,11 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				msgText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 					@Override
 					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-						boolean handled = false;
 						if (actionId == EditorInfo.IME_ACTION_SEND) {
-							send("");
-							handled = true;
+							send(msgText.getText().toString());
+							return true;
 						}
-						return handled;
+						return false;
 					}
 				});
 
@@ -282,11 +282,12 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				send.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						send("");
+						send(msgText.getText().toString());
 					}
 				});
 
-				new ChatRefresherThread().run();
+				thread = new ChatRefresherThread();
+				thread.run();
 			}
 		}
 
@@ -312,7 +313,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				data.put("msg", msg);
 
 				PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, this);
-				t.execute(SEVER + PHPs[0]);
+				t.execute(SEVER + PHPs[1]);
 			}
 		}
 
@@ -329,7 +330,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 					msgsNeeded = 0;
 
 			@Override
-			public void run() {
+			public synchronized void run() {
+				Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 				while (true) {
 					try {
 						if ((time <= System.currentTimeMillis() - CHAT_REFRESH || msgsNeeded != 0) && finished) {
