@@ -2,7 +2,7 @@
     include_once("connection.php");
 
 	//TODO private chat
-	$last_id = "SELECT max(id) FROM".$global_chat_table);
+	$last_id = "SELECT max(id) FROM".$global_chat_table;
 
 	if(isset($_POST['lastId'])) {
 		$query = $last_id;
