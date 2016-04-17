@@ -4,10 +4,7 @@
 			$time = $_POST['time'];
 			$chat = $_POST['chat'];
 			$nick = $_POST['nick'];
-	}
-
-	if($time != 0) {
-		if((isset($_POST['is_text'])) != 0) {
+		if((isset($_POST['is_text'])) > 0) {
 			if(isset($_POST['msg'])){
 				$msg = $_POST['msg'];
 
@@ -16,35 +13,23 @@
 				elseif(isset($_POST['destination'])) {
 					//TODO
 				}
-
-				$result = mysqli_query($conn, $query);
-				if($result > 0){
-					echo "success";
-					exit;
-				} else {
-					echo "failed";
-					exit;
-				}
 			}
-		} else {
-			if(isset($_POST['image'])) {
-				$msg = $_POST['image'];
+		} elseif(isset($_POST['image'])) {
+			$msg = $_POST['image'];
 
-				if($chat === "global")
-					$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES($time, '$nick', TRUE, $image)";
-				else {
-					//todo
-				}
-
-				$result = mysqli_query($conn, $query);
-				if($result > 0){
-					echo "success";
-					exit;
-				} else {
-					echo "failed";
-					exit;
-				}
+			if($chat === "global")
+				$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES($time, '$nick', TRUE, $image)";
+			else {
+				//todo
 			}
 		}
+
+		$result = mysqli_query($conn, $query);
+		if($result > 0) {
+			echo "success";
+		} else {
+			echo "failed";
+		}
+		exit;
 	}
 ?>

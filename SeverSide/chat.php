@@ -1,3 +1,4 @@
+
 <?PHP
     include_once("connection.php");
 
@@ -18,4 +19,5 @@
 	}
 
 	echo json_encode($data);
+	exit;
 ?>
