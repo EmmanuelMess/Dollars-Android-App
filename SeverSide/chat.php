@@ -19,5 +19,5 @@
 	}
 
 	echo json_encode($data);
-	exit;
+	include_once("return.php"); 
 ?>

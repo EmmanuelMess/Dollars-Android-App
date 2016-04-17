@@ -30,6 +30,6 @@
 		} else {
 			echo "failed";
 		}
-		exit;
 	}
+	include_once("return.php"); 
 ?>
