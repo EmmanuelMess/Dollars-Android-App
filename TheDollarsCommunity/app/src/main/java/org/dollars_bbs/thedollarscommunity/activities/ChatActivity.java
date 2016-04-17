@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
@@ -57,7 +58,7 @@ import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
 public class ChatActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
-	private static final String SEVER = "http://roadrunner-forums.com/boards/App/";// TODO: 2016-04-15 CORRECT!!!
+	private static final String SEVER = "http://roadrunner-forums.com/boards/App/";
 	private static final String[] PHPs = {"chat.php", "send_msg.php"};
 	private final String[][] TABS = {{"GLOBAL", "LOCAL", "PRIVATE"}, {"GLOBAL", "PRIVATE"}};
 	private final int REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -145,13 +146,11 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		switch (requestCode) {
 			case SELECT_PHOTO:
 				if (resultCode == RESULT_OK) {
-					try {
-						Uri selectedImage = imageReturnedIntent.getData();
-						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
-						(new IO.SaveImageAsyncTask()).execute(userImage);
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					}
+					Uri selectedImage = imageReturnedIntent.getData();
+
+					Intent intent = new Intent(getApplicationContext(), SendImageActivity.class);
+					intent.putExtra(SendImageActivity.BITMAP, selectedImage);
+					startActivityForResult(intent, 0);
 				}
 		}
 	}
@@ -287,7 +286,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				});
 
 				thread = new ChatRefresherThread();
-				thread.run();
+				thread.start();
 			}
 		}
 
@@ -322,19 +321,18 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			// TODO: 2016-04-15 check if msg was sent
 		}
 
-		private class ChatRefresherThread implements Runnable, AsyncResponse {
-			private long time = 0;
+		private class ChatRefresherThread {
+			private Handler mHandler = new Handler();
 			private boolean stop;
 			private boolean finished = true;
 			private int lastId = 0,
 					msgsNeeded = 0;
 
-			@Override
-			public synchronized void run() {
-				Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-				while (true) {
-					try {
-						if ((time <= System.currentTimeMillis() - CHAT_REFRESH || msgsNeeded != 0) && finished) {
+			public void start() {
+				Runnable r = new Runnable() {
+					@Override
+					public void run() {
+						if (msgsNeeded != 0 && finished) {
 							finished = false;
 							HashMap<String, String> data = new HashMap<>();
 							if (msgsNeeded == 0)
@@ -342,42 +340,40 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 							else
 								data.put("amount", Integer.toString(msgsNeeded));
 
-							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, this);
+							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (new AsyncResponse() {
+								@Override
+								public void processFinish(String jsonString) {
+									final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
+									assert chatBox != null;
+
+									if (msgsNeeded == 0) {
+										ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
+										msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+									} else {
+										ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
+										lastId = chat.get(chat.size() - 1).id;
+										msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+										for (int i = 0; i < chat.size(); i++) {
+											nicks.add(chat.get(i).nick);
+
+											if (chat.get(i).isImage) {
+												// TODO: 2016-04-16 send img
+											} else {
+												msgs.add(chat.get(i).message);
+											}
+										}
+
+										mAdapter.notifyDataSetChanged();
+										finished = true;
+									}
+								}
+							}));
 							t.execute(SEVER + PHPs[0]);
-							time = System.currentTimeMillis();
-						} else if (!stop) wait();
-						else if (stop) return;
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-
-			@Override
-			public void processFinish(String jsonString) {
-				final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
-				assert chatBox != null;
-
-				if (msgsNeeded == 0) {
-					ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
-					msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-				} else {
-					ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
-					lastId = chat.get(chat.size() - 1).id;
-					msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-					for (int i = 0; i < chat.size(); i++) {
-						nicks.add(chat.get(i).nick);
-
-						if (chat.get(i).isImage) {
-							// TODO: 2016-04-15
-						} else {
-							msgs.add(chat.get(i).message);
 						}
+						if(!stop) mHandler.postDelayed(this, CHAT_REFRESH);
 					}
-
-					mAdapter.notifyDataSetChanged();
-					finished = true;
-				}
+				};
+				mHandler.postDelayed(r, CHAT_REFRESH);
 			}
 
 			public void stop() {
