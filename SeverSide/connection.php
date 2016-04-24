@@ -9,9 +9,6 @@
 	$private_chat_table = "privates";
 
 	// Create connection
-	$conn = mysqli_connect($server, $username, $password, $dbname);
-	// Check connection
-	if (!$conn) {
-		die("Connection failed: ".mysqli_connect_error());
-	}
+	$conn = mysqli_connect($server, $username, $password, $dbname) 
+		or die(die("Connection failed: ".mysqli_connect_error()));
 ?>

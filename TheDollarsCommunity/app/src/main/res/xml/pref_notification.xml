@@ -4,24 +4,34 @@
          when checked/unchecked. -->
     <SwitchPreference
         android:defaultValue="true"
-        android:key="notifications_new_message"
-        android:title="@string/pref_title_new_message_notifications"/>
+        android:key="notifications"
+        android:title="@string/pref_notifications_title_notification"/>
 
-    <!-- Allows the user to choose a ringtone in the 'notification' category. -->
-    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
-    <!-- NOTE: RingtonePreference's summary should be set to its value by the activity code. -->
-    <RingtonePreference
-        android:defaultValue="content://settings/system/notification_sound"
-        android:dependency="notifications_new_message"
-        android:key="notifications_new_message_ringtone"
-        android:ringtoneType="notification"
-        android:title="@string/pref_title_ringtone"/>
-
-    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
-    <SwitchPreference
+    <CheckBoxPreference
+        android:key="boards"
+        android:dependency="notifications"
         android:defaultValue="true"
-        android:dependency="notifications_new_message"
-        android:key="notifications_new_message_vibrate"
-        android:title="@string/pref_title_vibrate"/>
+        android:title="@string/pref_notifications_title_boards"/>
+
+    <PreferenceCategory
+        android:title="@string/pref_notifications_title_chat"
+        android:dependency="notifications">
+        <CheckBoxPreference
+            android:key="global"
+            android:defaultValue="true"
+            android:dependency="notifications"
+            android:title="@string/pref_notifications_chat_global"/>
+        <CheckBoxPreference
+            android:key="local"
+            android:defaultValue="true"
+            android:dependency="notifications"
+            android:title="@string/pref_notifications_chat_local"/>
+        <CheckBoxPreference
+            android:key="private"
+            android:defaultValue="true"
+            android:dependency="notifications"
+            android:title="@string/pref_notifications_chat_private"/>
+        </PreferenceCategory>
+
 
 </PreferenceScreen>
