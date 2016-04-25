@@ -1,4 +1,3 @@
-
 <?PHP
     include_once("connection.php");
 
@@ -12,7 +11,7 @@
 		$query = "SELECT * FROM $global_chat_table WERE id>($last_id)-$amount;";
 	}
 	
-	$result = mysqli_query($conn, $query);
+	$result = mysqli_query($conn, $query) or die(mysqli_error($conn, $query).". Connection: '$conn'. Query: '$query'.");
 
 	while($row = mysqli_fetch_assoc($result)){
 			$data[] = $row;

@@ -236,8 +236,8 @@ public class MainActivity extends AppCompatActivity
 				break;
 
 			case R.id.nav_settings:
-				Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
-				//startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
+				if(!BuildConfig.DEBUG) Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
+				else startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
 				break;
 			case R.id.nav_feedback:
 				connect(WEBS[7]);//TODO check url

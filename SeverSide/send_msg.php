@@ -25,11 +25,7 @@
 		}
 
 		$result = mysqli_query($conn, $query);
-		if($result > 0) {
-			echo "success";
-		} else {
-			echo "failed";
-		}
+		echo("$result:".($result > 0?"succes":"failure"));
 	}
 	include_once("return.php"); 
 ?>
