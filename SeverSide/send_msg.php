@@ -24,7 +24,7 @@
 			}
 		}
 
-		$result = mysqli_query($conn, $query);
+		$result = mysqli_query($conn, $query) or die(mysqli_error($conn).". Connection: '$conn'. Query: '$query'.");
 		echo("$result:".($result > 0?"succes":"failure"));
 	}
 	include_once("return.php"); 
