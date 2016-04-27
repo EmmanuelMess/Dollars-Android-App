@@ -11,6 +11,13 @@ android {
         versionCode 1
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
+        jackOptions {
+            enabled true
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     buildTypes {
         debug {
@@ -31,17 +38,17 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
 
-    //RSS handling lib
-    //Adds to old android versions animations. Needed for date picker
-    //Material date picker
-    //Google's gson lib
-    //emoji keyboard
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
+    //RSS handling lib
     compile 'com.github.ahorn:android-rss:v1.0-rc1'
+    //Adds to old android versions animations. Needed for date picker
     compile 'com.nineoldandroids:library:2.4.0'
+    //Material date picker
     compile 'com.github.jaydeep17:datetimepicker:0.0.4'
+    //Google's gson lib
     compile 'com.google.code.gson:gson:2.4'
+    //emoji keyboard
     compile 'com.github.EmmanuelMess:Emoji-API-8-version:master-SNAPSHOT'
 }
