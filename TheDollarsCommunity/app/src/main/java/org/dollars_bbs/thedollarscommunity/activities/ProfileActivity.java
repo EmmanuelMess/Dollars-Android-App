@@ -5,7 +5,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import org.dollars_bbs.thedollarscommunity.R;
 
@@ -22,12 +21,9 @@ public class ProfileActivity extends AppCompatActivity {
 
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 		assert fab != null;
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				// TODO: 2016-03-30 private chat
-				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-			}
+		fab.setOnClickListener(view->{
+			// TODO: 2016-03-30 private chat
+			Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
 		});
 	}
 
