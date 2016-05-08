@@ -9,6 +9,8 @@
 	} elseif(isset($_POST['amount'])) {
 		$amount = $_POST['amount'];		
 		$query = "SELECT * FROM $global_chat_table WERE id>($last_id)-$amount;";
+	} else {
+		$query = "SELECT * FROM $global_chat_table WERE id>($last_id)-100;";
 	}
 	
 	$result = mysqli_query($conn, $query) or die(mysqli_error($conn).". Connection: '$conn'. Query: '$query'.");
