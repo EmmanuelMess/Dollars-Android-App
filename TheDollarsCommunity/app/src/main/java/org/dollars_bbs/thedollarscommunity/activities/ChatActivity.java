@@ -20,7 +20,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,15 +40,11 @@ import com.kosalgeek.genasync12.AsyncResponse;
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
 import com.vanniktech.emoji.EmojiEditText;
 import com.vanniktech.emoji.EmojiPopup;
-import com.vanniktech.emoji.listeners.OnEmojiPopupDismissListener;
-import com.vanniktech.emoji.listeners.OnEmojiPopupShownListener;
-import com.vanniktech.emoji.listeners.OnSoftKeyboardCloseListener;
 
 import org.dollars_bbs.thedollarscommunity.BuildConfig;
 import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,11 +232,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				chatBox.setOnItemClickListener(this);
 
 				emojiButton = (ImageView) view.findViewById(R.id.main_activity_emoji);
-				emojiButton.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(final View v) {
-						//emojiPopup.toggle();
-					}
+				emojiButton.setOnClickListener(v->{
+					//emojiPopup.toggle();
 				});
 
 				final EmojiEditText msgText = (EmojiEditText) view.findViewById(R.id.emojiEditText);
@@ -249,41 +241,20 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				msgText.setVisibility(View.VISIBLE);
 
 				emojiPopup = EmojiPopup.Builder.fromRootView(msgingLayout)
-						.setOnEmojiPopupShownListener(new OnEmojiPopupShownListener() {
-							@Override
-							public void onEmojiPopupShown() {
-								emojiButton.setImageResource(R.drawable.ic_keyboard_24dp);
-							}
-						}).setOnEmojiPopupDismissListener(new OnEmojiPopupDismissListener() {
-							@Override
-							public void onEmojiPopupDismiss() {
-								emojiButton.setImageResource(R.drawable.ic_mood_24dp);
-							}
-						}).setOnSoftKeyboardCloseListener(new OnSoftKeyboardCloseListener() {
-							@Override
-							public void onKeyboardClose() {
-								emojiPopup.dismiss();
-							}
-						}).build(msgText);
+						.setOnEmojiPopupShownListener(()->emojiButton.setImageResource(R.drawable.ic_keyboard_24dp))
+						.setOnEmojiPopupDismissListener(()->emojiButton.setImageResource(R.drawable.ic_mood_24dp))
+						.setOnSoftKeyboardCloseListener(()->emojiPopup.dismiss()).build(msgText);
 
-				msgText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-					@Override
-					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-						if (actionId == EditorInfo.IME_ACTION_SEND) {
-							send(msgText.getText().toString());
-							return true;
-						}
-						return false;
+				msgText.setOnEditorActionListener((v, actionId, event)->{
+					if (actionId == EditorInfo.IME_ACTION_SEND) {
+						send(msgText.getText().toString());
+						return true;
 					}
+					return false;
 				});
 
 				ImageView send = (ImageView) view.findViewById(R.id.sendImg);
-				send.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						send(msgText.getText().toString());
-					}
-				});
+				send.setOnClickListener(view1->send(msgText.getText().toString()));
 
 				thread = new ChatRefresherThread();
 				thread.start();
@@ -340,37 +311,34 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 							else
 								data.put("amount", Integer.toString(msgsNeeded));
 
-							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (new AsyncResponse() {
-								@Override
-								public void processFinish(String jsonString) {
-									final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
-									assert chatBox != null;
+							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
+								final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
+								assert chatBox != null;
 
-									if (msgsNeeded == 0) {
-										ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
-										msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-									} else {
-										ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
-										lastId = chat.get(chat.size() - 1).id;
-										msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-										for (int i = 0; i < chat.size(); i++) {
-											nicks.add(chat.get(i).nick);
+								if (msgsNeeded == 0) {
+									ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
+									msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+								} else {
+									ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
+									lastId = chat.get(chat.size() - 1).id;
+									msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+									for (int i = 0; i < chat.size(); i++) {
+										nicks.add(chat.get(i).nick);
 
-											if (chat.get(i).isImage) {
-												// TODO: 2016-04-16 send img
-											} else {
-												msgs.add(chat.get(i).message);
-											}
+										if (chat.get(i).isImage) {
+											// TODO: 2016-04-16 send img
+										} else {
+											msgs.add(chat.get(i).message);
 										}
-
-										mAdapter.notifyDataSetChanged();
-										finished = true;
 									}
+
+									mAdapter.notifyDataSetChanged();
+									finished = true;
 								}
 							}));
 							t.execute(SEVER + PHPs[0]);
 						}
-						if(!stop) mHandler.postDelayed(this, CHAT_REFRESH);
+						if (!stop) mHandler.postDelayed(this, CHAT_REFRESH);
 					}
 				};
 				mHandler.postDelayed(r, CHAT_REFRESH);
@@ -415,7 +383,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 				this(context, textViewResourceId, images, nicks, null, msgs);
 			}
 
-			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, int[] distances, List<String> extras) {
+			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, int[] distances,
+			                       List<String> extras) {
 				super(context, textViewResourceId, extras);
 				mImages = images;
 				mNicks = nicks;

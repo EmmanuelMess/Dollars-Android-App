@@ -1,7 +1,6 @@
 package org.dollars_bbs.thedollarscommunity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -301,14 +300,11 @@ public class MainActivity extends AppCompatActivity
 
 			try {
 				if (RSSFeeds[RSSNumber] == null) {
-					Thread t = new Thread(new Runnable() {
-						@Override
-						public void run() {// TODO: 2016-03-20 this thread should be an AsyncTask!
-							try {
-								RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
-							} catch (RSSReaderException e) {
-								failedFetch(RSSNumber);
-							}
+					Thread t = new Thread(()->{// TODO: 2016-03-20 this thread should be an AsyncTask!
+						try {
+							RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
+						} catch (RSSReaderException e) {
+							failedFetch(RSSNumber);
 						}
 					});
 
@@ -349,10 +345,8 @@ public class MainActivity extends AppCompatActivity
 			new AlertDialog.Builder(this)
 					.setTitle("No internet")
 					.setMessage("Unable to connect to the internet")
-					.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
+					.setPositiveButton(android.R.string.ok, (dialog, which)->{
 
-						}
 					})
 					.create()
 					.show();
