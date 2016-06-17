@@ -23,20 +23,17 @@ public class PasswordActivity extends AppCompatActivity {
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		View.OnClickListener c = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				TextView t = ((TextView) findViewById(R.id.textView));
-				assert t != null;
-				if (equal(t.getText().toString(), "baccano")) {
-					Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-					//Clears the Stack so that BACK won't lead here.
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);
-					startActivity(intent);
+		View.OnClickListener c = v->{
+			TextView t = ((TextView) findViewById(R.id.textView));
+			assert t != null;
+			if (equal(t.getText().toString(), "baccano")) {
+				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+				//Clears the Stack so that BACK won't lead here.
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | IntentCompat.FLAG_ACTIVITY_CLEAR_TASK);
+				startActivity(intent);
 
-				} else
-					Snackbar.make(v, getString(R.string.wrong), Snackbar.LENGTH_LONG).setAction("Action", null).show();
-			}
+			} else
+				Snackbar.make(v, getString(R.string.wrong), Snackbar.LENGTH_LONG).setAction("Action", null).show();
 		};
 
 		View b = findViewById(R.id.button);

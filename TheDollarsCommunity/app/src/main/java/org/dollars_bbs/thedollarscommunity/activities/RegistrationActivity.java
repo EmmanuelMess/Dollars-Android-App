@@ -62,13 +62,10 @@ public class RegistrationActivity extends AppCompatActivity {
 		imageB = (ImageButton) findViewById(R.id.userImageButton);
 		assert imageB != null;
 
-		View.OnClickListener imageL = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-				photoPickerIntent.setType("image/*");
-				startActivityForResult(photoPickerIntent, SELECT_PHOTO);
-			}
+		View.OnClickListener imageL = v->{
+			Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+			photoPickerIntent.setType("image/*");
+			startActivityForResult(photoPickerIntent, SELECT_PHOTO);
 		};
 
 		imageB.setOnClickListener(imageL);
@@ -135,37 +132,25 @@ public class RegistrationActivity extends AppCompatActivity {
 		assert birthB != null;
 		birthB.setText(date(calendar, userDataEditor));
 
-		final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
-			@Override
-			public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
-				calendar.set(year, month, day);
-				birthB.setText(date(calendar, userDataEditor));
-			}
-
+		final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance((datePickerDialog1, year, month, day)->{
+			calendar.set(year, month, day);
+			birthB.setText(date(calendar, userDataEditor));
 		}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 		datePickerDialog.setYearRange(calendar.get(Calendar.YEAR) - MAX_LIFE_LENGTH, calendar.get(Calendar.YEAR) - MIN_LIFE_LENGTH);
 		datePickerDialog.setVibrate(false);
 		datePickerDialog.setCloseOnSingleTapDay(false);
 
-		birthB.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				datePickerDialog.show(getSupportFragmentManager(), DATE_PICKER_TAG);
-			}
-		});
+		birthB.setOnClickListener(v->datePickerDialog.show(getSupportFragmentManager(), DATE_PICKER_TAG));
 
-		View.OnClickListener registerL = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				userDataEditor.putInt(getString(R.string.user_file_registered), 1);
+		View.OnClickListener registerL = v->{
+			userDataEditor.putInt(getString(R.string.user_file_registered), 1);
 
-				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-					userDataEditor.apply();
-				else
-					userDataEditor.commit();
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+				userDataEditor.apply();
+			else
+				userDataEditor.commit();
 
-				startActivity(new Intent(getApplicationContext(), ChatActivity.class));
-			}
+			startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 		};
 
 		registerB.setOnClickListener(registerL);
