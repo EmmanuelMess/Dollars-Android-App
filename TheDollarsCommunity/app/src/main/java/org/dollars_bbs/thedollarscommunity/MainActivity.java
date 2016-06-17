@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity
 		setSupportActionBar(toolbar);
 
 		// TODO: 2016-04-09 ask for INTERNET permission
-
 		/*
 		//Enable in xml too!
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
