@@ -1,4 +1,5 @@
 <?php
+	$ver = "2";
 	$server = ""; //replaced it with database server name
 	$username = "";  //replaced it with database username
 	$password = "";  //replaced it with database password
