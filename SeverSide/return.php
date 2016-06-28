@@ -1,5 +1,7 @@
 <?PHP
-    mysqli_free_result($result);
+	 if((isset($result) && is_resource($result)){
+		 mysqli_free_result($result);
+	}
 	mysqli_close($conn);
 
 	if(isset($_POST['web'])) {

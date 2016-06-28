@@ -26,7 +26,7 @@
 
 		$result = mysqli_query($conn, $query);
 		
-		if(!$result) die(mysqli_error($conn).". Connection: '$conn'. Query: '$query'.");
+		if(!$result) die(mysqli_error($conn).". Query: '$query'.");
 		echo("$result:".($result > 0?"succes":"failure"));
 	}
 	include_once("return.php"); 

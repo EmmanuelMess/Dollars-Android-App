@@ -46,7 +46,11 @@ public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
 	private final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
-			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/personal/index.rss"},
+			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
+			"http://dollars-bbs.org/comics/index.rss", "http://dollars-bbs.org/films/index.rss", "http://dollars-bbs.org/food/index.rss",
+			"http://dollars-bbs.org/games/index.rss", "http://dollars-bbs.org/literature/index.rss", "http://dollars-bbs.org/music/index.rss",
+			"http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/tech/index.rss",
+			"http://dollars-bbs.org/random/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
@@ -195,7 +199,7 @@ public class MainActivity extends AppCompatActivity
 				loadRSS(2);
 				break;
 			case R.id.nav_rss_personal:
-				loadRSS(3);
+				loadRSS(12);
 				break;
 
 			case R.id.nav_roadrunner_forum:
