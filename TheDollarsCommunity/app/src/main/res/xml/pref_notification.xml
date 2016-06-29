@@ -4,32 +4,32 @@
          when checked/unchecked. -->
     <SwitchPreference
         android:defaultValue="true"
-        android:key="notifications"
+        android:key="notificationsPref"
         android:title="@string/pref_notifications_title_notification"/>
 
     <CheckBoxPreference
         android:key="boards"
-        android:dependency="notifications"
+        android:dependency="notificationsPref"
         android:defaultValue="true"
         android:title="@string/pref_notifications_title_boards"/>
 
     <PreferenceCategory
         android:title="@string/pref_notifications_title_chat"
-        android:dependency="notifications">
+        android:dependency="notificationsPref">
         <CheckBoxPreference
-            android:key="global"
+            android:key="globalNotifPref"
             android:defaultValue="true"
-            android:dependency="notifications"
+            android:dependency="notificationsPref"
             android:title="@string/pref_notifications_chat_global"/>
         <CheckBoxPreference
-            android:key="local"
+            android:key="localNotifPref"
             android:defaultValue="true"
-            android:dependency="notifications"
+            android:dependency="notificationsPref"
             android:title="@string/pref_notifications_chat_local"/>
         <CheckBoxPreference
-            android:key="private"
+            android:key="privateNotifPref"
             android:defaultValue="true"
-            android:dependency="notifications"
+            android:dependency="notificationsPref"
             android:title="@string/pref_notifications_chat_private"/>
         </PreferenceCategory>
 

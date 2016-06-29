@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -19,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -41,6 +43,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
@@ -100,6 +104,11 @@ public class MainActivity extends AppCompatActivity
 		assert webView != null;
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setWebViewClient(new PWebViewClient());
+		//Map<String, ?> settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getAll();
+		//SubMenu menu = (SubMenu) navigationView.findViewById(R.id.group_rss);
+		//for(int i = 0; i < RSS.length; i++)
+		//	if(settings.get(SettingsActivity.BOARDS_KEYS[i]) == Boolean.TRUE)
+	//			menu.add(getString(SettingsActivity.BOARDS_TITLE_KEYS[i]));
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
@@ -180,7 +189,6 @@ public class MainActivity extends AppCompatActivity
 		return super.onOptionsItemSelected(item);
 	}
 
-	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
@@ -188,62 +196,55 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		switch (id) {
-			case R.id.nav_rss_main:
-				loadRSS(0);
-				break;
-			case R.id.nav_rss_missions:
-				loadRSS(1);
-				break;
-			case R.id.nav_rss_news:
-				loadRSS(2);
-				break;
-			case R.id.nav_rss_personal:
-				loadRSS(12);
-				break;
+		if(item.getSubMenu() == findViewById(R.id.group_rss))
+			loadRSS(0);
+		else {
+			switch (id) {
+				case R.id.nav_roadrunner_forum:
+					connect(WEBS[0]);
+					break;
+				case R.id.nav_dollars_worldwide:
+					connect(WEBS[1]);
+					break;
 
-			case R.id.nav_roadrunner_forum:
-				connect(WEBS[0]);
-				break;
-			case R.id.nav_dollars_worldwide:
-				connect(WEBS[1]);
-				break;
+				case R.id.nav_chat:
+					if (isRegistered)
+						startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+					else
+						startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
+					break;
+				case R.id.nav_chat_durarara:
+					connect(WEBS[2]);//TODO check url
+					break;
+				case R.id.nav_chat_dollars_drrr:
+					connect(WEBS[3]);//TODO check url
+					break;
 
-			case R.id.nav_chat:
-				if(isRegistered)
-					startActivity(new Intent(getApplicationContext(), ChatActivity.class));
-				else
-					startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
-				break;
-			case R.id.nav_chat_durarara:
-				connect(WEBS[2]);//TODO check url
-				break;
-			case R.id.nav_chat_dollars_drrr:
-				connect(WEBS[3]);//TODO check url
-				break;
+				case R.id.nav_tumblr:
+					connect(WEBS[4]);
+					break;
+				case R.id.nav_map:
+					Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+							Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
+					startActivity(intent);
+					break;
+				case R.id.nav_free_rice:
+					connect(WEBS[5]);
+					break;
+				case R.id.nav_kiva:
+					connect(WEBS[6]);
+					break;
 
-			case R.id.nav_tumblr:
-				connect(WEBS[4]);
-				break;
-			case R.id.nav_map:
-				Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-						Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
-				startActivity(intent);
-				break;
-			case R.id.nav_free_rice:
-				connect(WEBS[5]);
-				break;
-			case R.id.nav_kiva:
-				connect(WEBS[6]);
-				break;
-
-			case R.id.nav_settings:
-				if(!BuildConfig.DEBUG) Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
-				else startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
-				break;
-			case R.id.nav_feedback:
-				connect(WEBS[7]);//TODO check url
-				break;
+				case R.id.nav_settings:
+					if (!BuildConfig.DEBUG)
+						Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
+					else
+						startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
+					break;
+				case R.id.nav_feedback:
+					connect(WEBS[7]);//TODO check url
+					break;
+			}
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

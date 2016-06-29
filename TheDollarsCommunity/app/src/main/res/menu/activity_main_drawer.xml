@@ -3,22 +3,6 @@
 
     <group android:checkableBehavior="single"
            android:id="@+id/group_rss">
-        <item
-            android:id="@+id/nav_rss_main"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/main"/>
-        <item
-            android:id="@+id/nav_rss_missions"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/missions"/>
-        <item
-            android:id="@+id/nav_rss_news"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/news"/>
-        <item
-            android:id="@+id/nav_rss_personal"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/personal"/>
     </group>
 
     <group android:checkableBehavior="single"

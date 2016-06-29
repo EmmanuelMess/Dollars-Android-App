@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -17,6 +16,7 @@ import android.view.MenuItem;
 
 import org.dollars_bbs.thedollarscommunity.R;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -31,6 +31,16 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+	public static final String [] BOARDS_KEYS = {"mainPref", "missionPref", "newsPref", "animationPref", "artPref",
+			"comicsPref", "filmsPref", "foodsPref", "gamesPref", "literaturePref", "musicPref", "personalPref",
+			"sportsPref", "technologyPref", "randomPref"};
+	public static final int [] BOARDS_TITLE_KEYS = {R.string.pref_boards_title_main, R.string.pref_boards_title_missions,
+										R.string.pref_boards_title_news, R.string.pref_boards_title_animation, R.string.pref_boards_title_art,
+								R.string.pref_boards_title_comics, R.string.pref_boards_title_films, R.string.pref_boards_title_food,
+								R.string.pref_boards_title_games, R.string.pref_boards_title_literature, R.string.pref_boards_title_music,
+								R.string.pref_boards_title_personal, R.string.pref_boards_title_sports, R.string.pref_boards_title_technology,
+								R.string.pref_boards_title_random};
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are shown
@@ -86,7 +96,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// Bind the summaries of EditText/List/Dialog/Ringtone preferences to
 		// their values. When their values change, their summaries are updated
 		// to reflect the new value, per the Android Design guidelines.
-		//bindPreferenceSummaryToValue(findPreference("example_text"));
+		bindBoardPrefs();
+
+		bindNotifPrefs();
 	}
 
 
@@ -94,6 +106,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 * Helper method to determine if the device has an extra-large screen. For
 	 * example, 10" tablets are extra-large.
 	 */
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	private static boolean isXLargeTablet(Context context) {
 		return (context.getResources().getConfiguration().screenLayout
 				& Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
@@ -120,29 +133,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		return isXLargeTablet(this) && !isSimplePreferences(this);
 	}
 
-	/**
-	 * A preference value change listener that updates the preference's summary
-	 * to reflect its new value.
-	 */
-	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value)->{
-		String stringValue = value.toString();
-
-		if (preference instanceof ListPreference) {
-			// For list preferences, look up the correct display value in
-			// the preference's 'entries' list.
-			ListPreference listPreference = (ListPreference) preference;
-			int index = listPreference.findIndexOfValue(stringValue);
-
-			// Set the summary to reflect the new value.
-			preference.setSummary(index >= 0? listPreference.getEntries()[index]:null);
-
-		} else {
-			// For all other preferences, set the summary to the value's
-			// simple string representation.
-			preference.setSummary(stringValue);
-		}
-		return true;
-	};
 
 	/**
 	 * {@inheritDoc}
@@ -155,26 +145,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		}
 	}
 
-	/**
-	 * Binds a preference's summary to its value. More specifically, when the
-	 * preference's value is changed, its summary (line of text below the
-	 * preference title) is updated to reflect the value. The summary is also
-	 * immediately updated upon calling this method. The exact display format is
-	 * dependent on the type of preference.
-	 *
-	 * @see #sBindPreferenceSummaryToValueListener
-	 */
-	private static void bindPreferenceSummaryToValue(Preference preference) {
-		// Set the listener to watch for value changes.
-		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-		// Trigger the listener immediately with the preference's
-		// current value.
-		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-				PreferenceManager
-						.getDefaultSharedPreferences(preference.getContext())
-						.getString(preference.getKey(), ""));
-	}
 
 	/**
 	 * This method stops fragment injection in malicious applications.
@@ -202,7 +172,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			//bindPreferenceSummaryToValue(findPreference("example_text"));
+			((SettingsActivity)this.getActivity()).bindBoardPrefs();
 		}
 
 		@Override
@@ -232,7 +202,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			//bindPreferenceSummaryToValue(findPreference("example_text"));
+			((SettingsActivity)this.getActivity()).bindNotifPrefs();
 		}
 
 		@Override
@@ -244,6 +214,47 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			}
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void bindBoardPrefs() {
+		for(String e : BOARDS_KEYS)
+			bindPreferenceSummaryToValue(findPreference(e));
+	}
+
+
+	private void bindNotifPrefs() {
+		bindPreferenceSummaryToValue(findPreference("notificationsPref"));
+		bindPreferenceSummaryToValue(findPreference("globalNotifPref"));
+		bindPreferenceSummaryToValue(findPreference("localNotifPref"));
+		bindPreferenceSummaryToValue(findPreference("privateNotifPref"));
+	}
+
+
+	/**
+	 * A preference value change listener that updates the preference's summary
+	 * to reflect its new value.
+	 */
+	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value)->true;
+
+	/**
+	 * Binds a preference's summary to its value. More specifically, when the
+	 * preference's value is changed, its summary (line of text below the
+	 * preference title) is updated to reflect the value. The summary is also
+	 * immediately updated upon calling this method. The exact display format is
+	 * dependent on the type of preference.
+	 *
+	 * @see #sBindPreferenceSummaryToValueListener
+	 */
+	private static void bindPreferenceSummaryToValue(Preference preference) {
+		// Set the listener to watch for value changes.
+		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
+
+		// Trigger the listener immediately with the preference's
+		// current value.
+		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+				PreferenceManager
+						.getDefaultSharedPreferences(preference.getContext())
+						.getBoolean(preference.getKey(), false));
 	}
 
 }
