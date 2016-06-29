@@ -2,24 +2,23 @@
     include_once("connection.php");
 
 	//TODO private chat
-	$last_id = "SELECT max(id) FROM $global_chat_table;";
+	if(isset($_POST['startId']))
+		$startId = $_POST['startId']);
+	else
+		$startId = 1;
 
-	if(isset($_POST['lastId'])) {
-		$query = $last_id;
-	} elseif(isset($_POST['amount'])) {
-		$amount = $_POST['amount'];		
-		$query = "SELECT * FROM $global_chat_table WERE id>($last_id)-$amount;";
-	} else {
-		$query = "SELECT * FROM $global_chat_table WERE id>($last_id)-100;";
-	}
-	
+	if(isset($_POST['amount'])) 
+		$amount = $_POST['amount'];	
+	else $amount = 100;
+
+	$query = "((SELECT * FROM $global_chat_table LIMIT $startId) ORDER BY id DESC LIMIT $amount) ORDER BY id ASC";
+
 	$result = mysqli_query($conn, $query);
 
-	if(!$result) die(mysqli_error($conn).". Query: '$query'.");
+	if(!$result) die(mysqli_error($conn).". \nQuery: '$query'.");
 
 	while($row = mysqli_fetch_assoc($result)){
 		$data[] = $row;
-		echo json_encode($row);
 	}
 
 	echo json_encode($data);
