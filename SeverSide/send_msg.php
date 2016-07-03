@@ -1,5 +1,5 @@
 <?PHP	
-	include_once("connection.php"); 
+	include_once("connection.php");
 	if(isset($_POST['time']) && isset($_POST['chat']) && isset($_POST['nick'])) {
 			$time = $_POST['time'];
 			$chat = $_POST['chat'];

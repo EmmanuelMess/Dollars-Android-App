@@ -3,7 +3,7 @@
 
 	//TODO private chat
 	if(isset($_POST['startId']))
-		$startId = $_POST['startId']);
+		$startId = $_POST['startId'];
 	else
 		$startId = 1;
 
