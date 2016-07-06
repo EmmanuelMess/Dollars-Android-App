@@ -9,7 +9,7 @@
 				$msg = $_POST['msg'];
 
 				if($chat === "global")
-					$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES ($time, '$nick', FALSE, '$msg');";
+					$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES ($time, '$nick', 1, '$msg');";
 				elseif(isset($_POST['destination'])) {
 					//TODO
 				}
@@ -18,7 +18,7 @@
 			$msg = $_POST['image'];
 
 			if($chat === "global")
-				$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES($time, '$nick', TRUE, $image);";
+				$query = "INSERT INTO $global_chat_table (time, nick, isImage, msg) VALUES($time, '$nick', 0, $image);";
 			else {
 				//todo
 			}
