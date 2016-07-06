@@ -11,7 +11,7 @@
 		$amount = $_POST['amount'];	
 	else $amount = 100;
 
-	$query = "((SELECT * FROM $global_chat_table LIMIT $startId) ORDER BY id DESC LIMIT $amount) ORDER BY id ASC";
+	$query = "SELECT * FROM (SELECT * FROM (SELECT * FROM $global_chat_table LIMIT $startId) ORDER BY id DESC LIMIT $amount) ORDER BY id ASC";
 
 	$result = mysqli_query($conn, $query);
 
