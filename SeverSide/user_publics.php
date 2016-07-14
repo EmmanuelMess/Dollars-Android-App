@@ -7,9 +7,8 @@
 		}
 
 		$nick = $_POST['nick'];
+		$query = "SELECT $nick FROM $user_table;";
 		
-		$query = "SELECT ".$nick." FROM ".$user_table.";";
-
 		$result = mysqli_query($conn, $query);
 
 		while($row = mysqli_fetch_assoc($result)){
