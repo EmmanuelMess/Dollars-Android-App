@@ -1,5 +1,5 @@
 <?php
-	$ver = "3";
+	$ver = "4";
 	$server = "";//replaced it with database server name
 	$username = "";//replaced it with database username
 	$password = "";//replaced it with database password
