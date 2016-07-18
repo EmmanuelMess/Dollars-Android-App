@@ -1,6 +1,5 @@
 package org.dollars_bbs.thedollarscommunity.activities;
 
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.view.MenuItem;
 
 import org.dollars_bbs.thedollarscommunity.R;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -41,6 +39,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 								R.string.pref_boards_title_games, R.string.pref_boards_title_literature, R.string.pref_boards_title_music,
 								R.string.pref_boards_title_personal, R.string.pref_boards_title_sports, R.string.pref_boards_title_technology,
 								R.string.pref_boards_title_random};
+
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are shown
@@ -76,10 +75,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 * device configuration dictates that a simplified, single-pane UI should be
 	 * shown.
 	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void setupSimplePreferencesScreen() {
-		if (!isSimplePreferences(this)) {
+		if (!isSimplePreferences(this))
 			return;
-		}
 
 		// Add 'notifications' preferences, and a corresponding header.
 		PreferenceCategory fakeHeader = new PreferenceCategory(this);
@@ -96,8 +95,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// Bind the summaries of EditText/List/Dialog/Ringtone preferences to
 		// their values. When their values change, their summaries are updated
 		// to reflect the new value, per the Android Design guidelines.
-		bindBoardPrefs();
-		bindNotifPrefs();
+		for (String e : BOARDS_KEYS)
+			bindPreferenceSummaryToValue(findPreference(e));
+
+		bindPreferenceSummaryToValue(findPreference("notificationsPref"));
+		bindPreferenceSummaryToValue(findPreference("globalNotifPref"));
+		bindPreferenceSummaryToValue(findPreference("localNotifPref"));
+		bindPreferenceSummaryToValue(findPreference("privateNotifPref"));
 	}
 
 
@@ -171,7 +175,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			((SettingsActivity)this.getActivity()).bindBoardPrefs();
+			for(String e : BOARDS_KEYS)
+				bindPreferenceSummaryToValue(findPreference(e));
 		}
 
 		@Override
@@ -201,7 +206,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			((SettingsActivity)this.getActivity()).bindNotifPrefs();
+			bindPreferenceSummaryToValue(findPreference("notificationsPref"));
+			bindPreferenceSummaryToValue(findPreference("globalNotifPref"));
+			bindPreferenceSummaryToValue(findPreference("localNotifPref"));
+			bindPreferenceSummaryToValue(findPreference("privateNotifPref"));
 		}
 
 		@Override
@@ -214,20 +222,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-
-	private void bindBoardPrefs() {
-		for(String e : BOARDS_KEYS)
-			bindPreferenceSummaryToValue(findPreference(e));
-	}
-
-
-	private void bindNotifPrefs() {
-		bindPreferenceSummaryToValue(findPreference("notificationsPref"));
-		bindPreferenceSummaryToValue(findPreference("globalNotifPref"));
-		bindPreferenceSummaryToValue(findPreference("localNotifPref"));
-		bindPreferenceSummaryToValue(findPreference("privateNotifPref"));
-	}
-
 
 	/**
 	 * A preference value change listener that updates the preference's summary

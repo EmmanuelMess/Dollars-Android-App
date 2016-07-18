@@ -1,5 +1,6 @@
 package org.dollars_bbs.thedollarscommunity;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -385,18 +387,20 @@ public class MainActivity extends AppCompatActivity
 	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 
 
 		//All the webs that don't require selected links to be loaded on other browser
-		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3]};
+		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3], WEBS[4], WEBS[7]};
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (Uri.parse(url).getHost().equals(url) && isSelectWeb(url)) {
-				// This is my web site, so do not override; let my WebView load the page
+			if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
 				return false;
-			}
-			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
-			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-			startActivity(intent);
-			return true;
+			else
+				return overrideUrlLoading(Uri.parse(url));
+
+		}
+
+		@TargetApi(Build.VERSION_CODES.N)
+		public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+			return overrideUrlLoading(request.getUrl());
 		}
 
 		@Override
@@ -411,6 +415,17 @@ public class MainActivity extends AppCompatActivity
 			super.onPageFinished(view, url);
 			progressBar.setVisibility(View.GONE);
 		}
+
+		private boolean overrideUrlLoading(Uri url) {
+			if (isSelectWeb(url.toString()))// This is my web site, so do not override; let my WebView load the page
+				return false;
+			
+			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+			Intent intent = new Intent(Intent.ACTION_VIEW, url);
+			startActivity(intent);
+			return true;
+		}
+
 
 		@SuppressWarnings("deprecation")
 		private void unloadPage() {
