@@ -20,7 +20,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
@@ -53,7 +51,7 @@ public class MainActivity extends AppCompatActivity
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
 			"http://dollars-bbs.org/comics/index.rss", "http://dollars-bbs.org/films/index.rss", "http://dollars-bbs.org/food/index.rss",
 			"http://dollars-bbs.org/games/index.rss", "http://dollars-bbs.org/literature/index.rss", "http://dollars-bbs.org/music/index.rss",
-			"http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/tech/index.rss",
+			"http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/tech/index.rss",
 			"http://dollars-bbs.org/random/index.rss"},
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
@@ -104,11 +102,6 @@ public class MainActivity extends AppCompatActivity
 		assert webView != null;
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setWebViewClient(new PWebViewClient());
-		//Map<String, ?> settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getAll();
-		//SubMenu menu = (SubMenu) navigationView.findViewById(R.id.group_rss);
-		//for(int i = 0; i < RSS.length; i++)
-		//	if(settings.get(SettingsActivity.BOARDS_KEYS[i]) == Boolean.TRUE)
-	//			menu.add(getString(SettingsActivity.BOARDS_TITLE_KEYS[i]));
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
@@ -118,6 +111,16 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		Map<String, ?> settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getAll();
+		Menu menu = navigationView.getMenu();
+		for(int i = 0; i < RSS.length; i++) {
+			if (settings.get(SettingsActivity.BOARDS_KEYS[i]) == Boolean.TRUE)
+				menu.add(R.id.group_rss, i, 0, getString(SettingsActivity.BOARDS_TITLE_KEYS[i]))
+						.setIcon(R.drawable.ic_rss_feed_white_24dp);
+			else if(menu.findItem(i) != null)
+				menu.removeItem(i);
+		}
 
 		//The first item is selected
 		navigationView.getMenu().getItem(0).setChecked(true);
@@ -197,7 +200,9 @@ public class MainActivity extends AppCompatActivity
 		int id = item.getItemId();
 
 		if(item.getSubMenu() == findViewById(R.id.group_rss))
-			loadRSS(0);
+			for(int i = 0; i < SettingsActivity.BOARDS_TITLE_KEYS.length; i++)
+				if(getString(SettingsActivity.BOARDS_TITLE_KEYS[i]) == item.getTitle())
+					loadRSS(i);
 		else {
 			switch (id) {
 				case R.id.nav_roadrunner_forum:
