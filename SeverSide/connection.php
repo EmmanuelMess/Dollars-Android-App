@@ -4,10 +4,9 @@
 	$username = "";//replaced it with database username
 	$password = "";//replaced it with database password
 	$dbname = "";//replaced it with database
-	$user_table = "users"; //(INT id, STRING nick, avatar, INT birthDay, INT birthMonth, INT birthYear, STRING description, STRING gender)
-	$private_chats_index_table = "privatesI";//(STRING nick, STRING privates)
-	$global_chat_table = "chat";//CREATE TABLE "chats" ("id" INTEGER PRIMARY KEY  NOT NULL ,"time" DATETIME,"nick" VARCHAR,"isImage" BOOL DEFAULT (1) ,"msg" VARCHAR)
-	$private_chat_table = "privates";
+	$user_table = "users"; //CREATE TABLE "users" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "nick" VARCHAR NOT NULL , "avatar" BLOB NOT NULL , "birth" DATE NOT NULL , "description" VARCHAR NOT NULL , "gender" INTEGER NOT NULL , "isTracked" BOOL NOT NULL  DEFAULT 1)
+	$private_chats_table = "privates";//CREATE TABLE "privates" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "id_sender" INTEGER NOT NULL , "id_receiver" INTEGER NOT NULL , "time" DATETIME NOT NULL , "isImage" BOOL NOT NULL  DEFAULT 0, "msg" BLOB NOT NULL )
+	$global_chat_table = "chat";//CREATE TABLE "chat" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "time" DATETIME NOT NULL , "nick" VARCHAR NOT NULL , "isImage" BOOL NOT NULL  DEFAULT 0, "msg" BLOB NOT NULL )
 
 	// Create connection
 	$conn = mysqli_connect($server, $username, $password, $dbname);
