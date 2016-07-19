@@ -16,7 +16,6 @@ id | id_sender | id_receiver | time | isImage | msg
 -- | --------- | ----------- | ---- | ------- | ---
 INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE | INTEGER NOT NULL | INTEGER NOT NULL | DATETIME NOT NULL | BOOL NOT NULL  DEFAULT 0 | BLOB NOT NULL 
 
-Updated Serverside Files 2016-06-26 @RoadRunner
+Updated Serverside Files 2016-07-18 @RoadRunner
 =======
-Updated Serverside Files 7/6/16
 >>>>>>> 08f80df25fa787b97f8132548cc724b8a0651ca3
