@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -12,6 +13,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+
+        <receiver android:name=".rss_io.RSSCheckOnBoot">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".activities.PasswordActivity"
             android:configChanges="orientation"
@@ -27,17 +35,7 @@
             android:configChanges="orientation"
             android:label="@string/app_name">
         </activity>
-        <activity
-            android:name=".activities.ChatActivity"
-            android:configChanges="orientation"
-            android:label="@string/chat"
-            android:parentActivityName=".MainActivity">
 
-            <!-- Parent activity meta-data to support 4.0 and lower -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
-        </activity>
         <activity
             android:name=".activities.RegistrationActivity"
             android:configChanges="orientation"
@@ -61,10 +59,10 @@
                 android:value=".activities.ChatActivity"/>
         </activity>
         <activity
-            android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
+            android:name=".activities.ChatActivity"
+            android:configChanges="orientation"
+            android:label="@string/chat"
+            android:parentActivityName=".MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
@@ -81,6 +79,27 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.ChatActivity"/>
         </activity>
+
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+
+        <receiver
+            android:name=".rss_io.RSSCheckBroadcastReceiver"
+            android:process=":remote" >
+        </receiver>
+
+        <service
+            android:name=".rss_io.RSSCheckService"
+            android:exported="false"/>
     </application>
 
 </manifest>

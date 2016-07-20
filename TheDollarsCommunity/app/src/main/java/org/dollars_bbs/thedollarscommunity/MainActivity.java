@@ -36,6 +36,7 @@ import android.widget.Toast;
 import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
 import org.dollars_bbs.thedollarscommunity.activities.RegistrationActivity;
 import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
+import org.dollars_bbs.thedollarscommunity.rss_io.RSSScheduledServiceHelper;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSReader;
 import org.mcsoxford.rss.RSSReaderException;
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity
 			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
+
+	private static final String FIRST_OPEN = "first open";
 
 	private WebView webView;
 	private ListView mainRSS;
@@ -107,14 +110,24 @@ public class MainActivity extends AppCompatActivity
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
-		progressBar = (ProgressBar) findViewById(R.id.progressBar);
-	}
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		if(pref.getBoolean(FIRST_OPEN, true)) {
+			SharedPreferences.Editor prefEdit = pref.edit();
+			for(int j = 0; j < RSS.length; j++)
+				prefEdit.putBoolean(SettingsActivity.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
 
-	@Override
-	protected void onResume() {
-		super.onResume();
+			prefEdit.putBoolean(FIRST_OPEN, false);
 
-		Map<String, ?> settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getAll();
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+				prefEdit.apply();
+			else
+				prefEdit.commit();
+
+			if(pref.getBoolean(SettingsActivity.NOTIF_KEYS[0], true))
+				RSSScheduledServiceHelper.startScheduled(this);
+		}
+
+		Map<String, ?> settings = pref.getAll();
 		Menu menu = navigationView.getMenu();
 		for(int i = 0; i < RSS.length; i++) {
 			if (settings.get(SettingsActivity.BOARDS_KEYS[i]) == Boolean.TRUE)
@@ -124,6 +137,12 @@ public class MainActivity extends AppCompatActivity
 				menu.removeItem(i);
 		}
 
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
 		//The first item is selected
 		navigationView.getMenu().getItem(0).setChecked(true);
 		onNavigationItemSelected(navigationView.getMenu().getItem(0));
@@ -351,7 +370,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	private boolean showErrorIfOffline() {
-		if (isOnline() || Build.FINGERPRINT.contains("generic")) {//isOnline() DOES NOT work on some emulators, hack from here: http://stackoverflow.com/a/5864867/3124150
+		if (Utils.isOnline() || Build.FINGERPRINT.contains("generic")) {//isOnline() DOES NOT work on some emulators, hack from here: http://stackoverflow.com/a/5864867/3124150
 			return true;
 		} else {
 			new AlertDialog.Builder(this)
@@ -364,24 +383,6 @@ public class MainActivity extends AppCompatActivity
 					.show();
 			return false;
 		}
-	}
-
-	/**
-	 * Checks for internet.
-	 *
-	 * @return true if there ie internet
-	 */
-	private boolean isOnline() {
-		Runtime runtime = Runtime.getRuntime();
-		try {
-			Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-			int exitValue = ipProcess.waitFor();
-			return (exitValue == 0);
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		return false;
 	}
 
 	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 

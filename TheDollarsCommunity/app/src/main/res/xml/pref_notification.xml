@@ -8,7 +8,7 @@
         android:title="@string/pref_notifications_title_notification"/>
 
     <CheckBoxPreference
-        android:key="boards"
+        android:key="boardsNotifPref"
         android:dependency="notificationsPref"
         android:defaultValue="true"
         android:title="@string/pref_notifications_title_boards"/>

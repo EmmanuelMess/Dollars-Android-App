@@ -2,12 +2,31 @@ package org.dollars_bbs.thedollarscommunity;
 
 import android.os.Build;
 
+import java.io.IOException;
 import java.util.Objects;
 /**
  * @author Emmanuel
  *         on 2016-03-17, at 12:02.
  */
 public class Utils {
+
+	/**
+	 * Checks for internet.
+	 *
+	 * @return true if there ie internet
+	 */
+	public static boolean isOnline() {
+		Runtime runtime = Runtime.getRuntime();
+		try {
+			Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+			int exitValue = ipProcess.waitFor();
+			return (exitValue == 0);
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
 
 	/**
 	 * Compares two objects in a fully compatible non deprecated way
