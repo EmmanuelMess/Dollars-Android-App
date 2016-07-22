@@ -7,6 +7,11 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
+import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
+
+import java.util.ArrayList;
+import java.util.Map;
+
 /**
  * @author Emmanuel
  *         on 2016-07-20, at 15:34.
@@ -14,13 +19,22 @@ import android.support.v4.app.TaskStackBuilder;
 public class Notifications {
 	private static int RSS_NOTIF_ID = 0;
 
-	public static void setRSSNotif(Context context, String[] RSSs) {
+	public static void setRSSNotif(Context context, Map<Integer, ArrayList<String>> RSSs) {
+		String s = "";
+
+		for(int i = 0; i < RSSs.size(); i++)
+			if(RSSs.get(i) != null)
+				for (String se : RSSs.get(i))
+					s += se + "@" + SettingsActivity.BOARDS_TITLE_KEYS[i] + "\n";
+
+
 		NotificationCompat.Builder mBuilder =
 				new NotificationCompat.Builder(context)
 						.setSmallIcon(R.drawable.ic_rss_feed_white_24dp)
-						.setContentTitle("My notification")
-						.setContentText("Hello World!")
-				.setAutoCancel(true);
+						.setContentTitle("Dollars BBS RSS")
+						.setContentText(s)
+						.setAutoCancel(true);
+
 		// Creates an explicit intent for an Activity in your app
 		Intent resultIntent = new Intent(context, MainActivity.class);
 

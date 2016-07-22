@@ -1,5 +1,6 @@
 package org.dollars_bbs.thedollarscommunity;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 
 import java.io.IOException;
