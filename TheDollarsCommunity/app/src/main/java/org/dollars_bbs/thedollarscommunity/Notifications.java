@@ -1,9 +1,11 @@
 package org.dollars_bbs.thedollarscommunity;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
@@ -25,7 +27,7 @@ public class Notifications {
 		for(int i = 0; i < RSSs.size(); i++)
 			if(RSSs.get(i) != null)
 				for (String se : RSSs.get(i))
-					s += se + "@" + SettingsActivity.BOARDS_TITLE_KEYS[i] + "\n";
+					s += se + "@" + context.getString(SettingsActivity.BOARDS_TITLE_KEYS[i]) + "\n";
 
 
 		NotificationCompat.Builder mBuilder =
@@ -50,10 +52,23 @@ public class Notifications {
 		PendingIntent resultPendingIntent =
 				stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setContentIntent(resultPendingIntent);
-		NotificationManager mNotificationManager =
-				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+		Notification notification;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			notification = mBuilder.setContentIntent(resultPendingIntent)
+					.setSmallIcon(R.drawable.ic_rss_feed_white_24dp)
+					.setContentTitle("Dollars BBS RSS")
+					.setContentText(s)
+					.setAutoCancel(true)
+					.setStyle(new NotificationCompat.BigTextStyle().bigText(s))
+					.setContentText(s).build();
+		} else
+			notification = mBuilder.build();
+
 		// mId allows you to update the notification later on.
-		mNotificationManager.notify(RSS_NOTIF_ID, mBuilder.build());
+		mNotificationManager.notify(RSS_NOTIF_ID, notification);
 	}
 
 }

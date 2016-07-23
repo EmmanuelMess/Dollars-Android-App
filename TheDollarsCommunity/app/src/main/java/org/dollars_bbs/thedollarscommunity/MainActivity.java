@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
 
-	private static final String FIRST_OPEN = "first open";
+	public static final String FIRST_OPEN = "first open";
 
 	private WebView webView;
 	private ListView mainRSS;

@@ -1,14 +1,10 @@
 package org.dollars_bbs.thedollarscommunity.rss_io;
 
 import android.app.IntentService;
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringDef;
 
 import org.dollars_bbs.thedollarscommunity.MainActivity;
 import org.dollars_bbs.thedollarscommunity.Notifications;
@@ -21,18 +17,10 @@ import org.mcsoxford.rss.RSSReaderException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 /**
  * @author Emmanuel
  *         on 2016-07-20, at 16:21.
@@ -61,22 +49,24 @@ public class RSSCheckService extends IntentService {
 
 			for (int i = 0; i < BOARDS_KEYS.length; i++) {
 				try {
-					String s = rssData.getString(BOARDS_KEYS[i], "0");
-					HttpURLConnection c = (HttpURLConnection) new URL("").openConnection();
+					long lastCheck = rssData.getLong(BOARDS_KEYS[i], 0);
+					HttpURLConnection c = (HttpURLConnection) new URL(MainActivity.RSS[i]).openConnection();
+					c.setIfModifiedSince(lastCheck);
 					c.connect();
-					c.setRequestProperty("If-Modified-Since", s);
 
-					if (c.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED) {
+					if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
 						newRSSFields.put(i, new ArrayList<>());
-						SharedPreferences.Editor e = rssData.edit().putString(s, c.getHeaderField("Last-Modified"));
 
 						RSSFeed r = new RSSReader().load(MainActivity.RSS[i]);
-						Date d = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z").parse(c.getHeaderField("Last-Modified"));
 
-						for (RSSItem elem : r.getItems())
-							if (elem.getPubDate().after(d))
-								newRSSFields.get(i).add(elem.getTitle());
+						for (RSSItem elem : r.getItems()) {
+							//if (elem.getPubDate().after(new Date(lastCheck))) {
+								String s = elem.getTitle();
+								newRSSFields.get(i).add(s.substring(0, s.lastIndexOf(" (")));
+							//}
+						}
 
+						SharedPreferences.Editor e = rssData.edit().putLong(BOARDS_KEYS[i], c.getDate());
 						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
 							e.apply();
 						else
@@ -84,7 +74,8 @@ public class RSSCheckService extends IntentService {
 
 						notEmpty = true;
 					}
-				} catch (IOException | RSSReaderException | ParseException e) {
+
+				} catch (IOException | RSSReaderException e) {
 					e.printStackTrace();
 				}
 			}
@@ -93,5 +84,6 @@ public class RSSCheckService extends IntentService {
 				Notifications.setRSSNotif(this, newRSSFields);
 		}
 	}
+
 }
 
