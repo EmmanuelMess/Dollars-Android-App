@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 /**
@@ -60,10 +61,12 @@ public class RSSCheckService extends IntentService {
 						RSSFeed r = new RSSReader().load(MainActivity.RSS[i]);
 
 						for (RSSItem elem : r.getItems()) {
-							//if (elem.getPubDate().after(new Date(lastCheck))) {
+							HttpURLConnection itemConn = (HttpURLConnection) new URL(elem.getLink().toString()).openConnection();
+							itemConn.connect();
+							if (new Date(itemConn.getLastModified()).after(new Date(lastCheck))) {
 								String s = elem.getTitle();
 								newRSSFields.get(i).add(s.substring(0, s.lastIndexOf(" (")));
-							//}
+							}
 						}
 
 						SharedPreferences.Editor e = rssData.edit().putLong(BOARDS_KEYS[i], c.getDate());
