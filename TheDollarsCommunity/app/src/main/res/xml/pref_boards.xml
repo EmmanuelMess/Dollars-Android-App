@@ -1,63 +1,63 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
-        android:key="main"
+        android:key="mainPref"
         android:defaultValue="true"
         android:title="@string/pref_boards_title_main"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="missionPref"
         android:title="@string/pref_boards_title_missions"
         android:defaultValue="true"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="newsPref"
         android:title="@string/pref_boards_title_news"
         android:defaultValue="true"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="animationPref"
         android:title="@string/pref_boards_title_animation"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="artPref"
         android:title="@string/pref_boards_title_art"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="comicsPref"
         android:title="@string/pref_boards_title_comics"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="filmsPref"
         android:title="@string/pref_boards_title_films"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="foodsPref"
         android:title="@string/pref_boards_title_food"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="gamesPref"
         android:title="@string/pref_boards_title_games"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="literaturePref"
         android:title="@string/pref_boards_title_literature"
         android:defaultValue="false"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="musicPref"
         android:title="@string/pref_boards_title_music"
-                android:defaultValue="false" />
+        android:defaultValue="false" />
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="personalPref"
         android:title="@string/pref_boards_title_personal"
         android:defaultValue="true"/>
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="sportsPref"
         android:title="@string/pref_boards_title_sports"
         android:defaultValue="false" />
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="technologyPref"
         android:title="@string/pref_boards_title_technology"
         android:defaultValue="false" />
     <CheckBoxPreference
-        android:key="firstDependent"
+        android:key="randomPref"
         android:title="@string/pref_boards_title_random"
         android:defaultValue="false" />
 </PreferenceScreen>

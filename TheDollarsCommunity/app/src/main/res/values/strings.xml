@@ -10,7 +10,11 @@
     <string name="user_file_birth_year">BirthYearData</string>
     <string name="user_file_registered">RegisteredData</string>
 
-    <string name="settings_file_key">UserSettings</string>
+    <string name="rss_file_key">RSSData</string>
+    <string name="rss_file_boards">BoardsData</string>
+
+    <string name="notif_file_key">NotificationsData</string>
+    <string name="notif_file_text">TextData</string>
 
     <string name="title_activity_password">Password</string>
     <string name="wrong">Wrong!</string>

@@ -1,21 +1,29 @@
 package org.dollars_bbs.thedollarscommunity.activities;
 
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.ListView;
 
+import org.dollars_bbs.thedollarscommunity.MainActivity;
+import org.dollars_bbs.thedollarscommunity.Notifications;
 import org.dollars_bbs.thedollarscommunity.R;
+import org.dollars_bbs.thedollarscommunity.Utils;
+import org.dollars_bbs.thedollarscommunity.rss_io.RSSScheduledServiceHelper;
 
 import java.util.List;
 
@@ -31,6 +39,18 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+	public static final String [] BOARDS_KEYS = {"mainPref", "missionPref", "newsPref", "animationPref", "artPref",
+			"comicsPref", "filmsPref", "foodsPref", "gamesPref", "literaturePref", "musicPref", "personalPref",
+			"sportsPref", "technologyPref", "randomPref"},
+									NOTIF_KEYS = {"boardsNotifPref", "globalNotifPref", "localNotifPref", "privateNotifPref"};
+	public static final int [] BOARDS_TITLE_KEYS = {R.string.pref_boards_title_main, R.string.pref_boards_title_missions,
+										R.string.pref_boards_title_news, R.string.pref_boards_title_animation, R.string.pref_boards_title_art,
+								R.string.pref_boards_title_comics, R.string.pref_boards_title_films, R.string.pref_boards_title_food,
+								R.string.pref_boards_title_games, R.string.pref_boards_title_literature, R.string.pref_boards_title_music,
+								R.string.pref_boards_title_personal, R.string.pref_boards_title_sports, R.string.pref_boards_title_technology,
+								R.string.pref_boards_title_random};
+
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are shown
@@ -47,11 +67,37 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
 	/**
 	 * Set up the {@link android.app.ActionBar}, if the API is available.
+	 * Also this is a gigantic hack to make the ActionBar have a working up button.
+	 * If solved the Manifest's SettingsActivity entry should just have AppTheme style.
 	 */
 	private void setupActionBar() {
+		Toolbar toolbar;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			ViewGroup root = (ViewGroup) findViewById(android.R.id.list).getParent().getParent().getParent();
+			toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_settings_toolbar, root, false);
+			root.addView(toolbar, 0);
+		} else {
+			ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
+			ListView content = (ListView) root.getChildAt(0);
+			root.removeAllViews();
+			toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_settings_toolbar, root, false);
+			int height;
+			TypedValue tv = new TypedValue();
+			if (getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
+				height = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+			} else {
+				height = toolbar.getHeight();
+			}
+			content.setPadding(0, height, 0, 0);
+			root.addView(content);
+			root.addView(toolbar);
+		}
+
+		setSupportActionBar(toolbar);
 		assert getSupportActionBar() != null;
-		// Show the Up button in the action bar.
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		toolbar.setNavigationOnClickListener(v->onBackPressed());
 	}
 
 	@Override
@@ -62,14 +108,23 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	}
 
 	/**
+	 * Hack to make the back button work, this shouldn't be here.
+	 * Check setupActionBar() method above.
+	 */
+	@Override
+	public void onBackPressed() {
+		startActivity(new Intent(getApplicationContext(), MainActivity.class));
+	}
+
+	/**
 	 * Shows the simplified settings UI if the device configuration if the
 	 * device configuration dictates that a simplified, single-pane UI should be
 	 * shown.
 	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void setupSimplePreferencesScreen() {
-		if (!isSimplePreferences(this)) {
+		if (!isSimplePreferences(this))
 			return;
-		}
 
 		// Add 'notifications' preferences, and a corresponding header.
 		PreferenceCategory fakeHeader = new PreferenceCategory(this);
@@ -86,14 +141,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// Bind the summaries of EditText/List/Dialog/Ringtone preferences to
 		// their values. When their values change, their summaries are updated
 		// to reflect the new value, per the Android Design guidelines.
-		//bindPreferenceSummaryToValue(findPreference("example_text"));
-	}
+		for (String e : BOARDS_KEYS)
+			bindPreferenceSummaryToValue(findPreference(e));
 
+		for(String e : NOTIF_KEYS)
+			bindPreferenceSummaryToValue(findPreference(e));
+	}
 
 	/**
 	 * Helper method to determine if the device has an extra-large screen. For
 	 * example, 10" tablets are extra-large.
 	 */
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	private static boolean isXLargeTablet(Context context) {
 		return (context.getResources().getConfiguration().screenLayout
 				& Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
@@ -121,30 +180,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	}
 
 	/**
-	 * A preference value change listener that updates the preference's summary
-	 * to reflect its new value.
-	 */
-	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value)->{
-		String stringValue = value.toString();
-
-		if (preference instanceof ListPreference) {
-			// For list preferences, look up the correct display value in
-			// the preference's 'entries' list.
-			ListPreference listPreference = (ListPreference) preference;
-			int index = listPreference.findIndexOfValue(stringValue);
-
-			// Set the summary to reflect the new value.
-			preference.setSummary(index >= 0? listPreference.getEntries()[index]:null);
-
-		} else {
-			// For all other preferences, set the summary to the value's
-			// simple string representation.
-			preference.setSummary(stringValue);
-		}
-		return true;
-	};
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -154,6 +189,77 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			loadHeadersFromResource(R.xml.pref_headers, target);
 		}
 	}
+
+	/**
+	 * This method stops fragment injection in malicious applications.
+	 * Make sure to deny any unknown fragments here.
+	 */
+	protected boolean isValidFragment(String fragmentName) {
+		return PreferenceFragment.class.getName().equals(fragmentName)
+				|| BoardsPreferenceFragment.class.getName().equals(fragmentName)
+				|| NotificationPreferenceFragment.class.getName().equals(fragmentName);
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public static class BasePreferenceFragment extends PreferenceFragment {
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			int id = item.getItemId();
+			if (id == android.R.id.home) {
+				startActivity(new Intent(getActivity(), SettingsActivity.class));
+				return true;
+			}
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	/**
+	 * This fragment shows general preferences only. It is used when the
+	 * activity is showing a two-pane settings UI.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public static class BoardsPreferenceFragment extends BasePreferenceFragment {
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.pref_boards);
+			setHasOptionsMenu(true);
+
+			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
+			// to their values. When their values change, their summaries are
+			// updated to reflect the new value, per the Android Design
+			// guidelines.
+			for(String e : BOARDS_KEYS)
+				bindPreferenceSummaryToValue(findPreference(e));
+		}
+	}
+
+	/**
+	 * This fragment shows notification preferences only. It is used when the
+	 * activity is showing a two-pane settings UI.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public static class NotificationPreferenceFragment extends BasePreferenceFragment {
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.pref_notification);
+			setHasOptionsMenu(true);
+
+			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
+			// to their values. When their values change, their summaries are
+			// updated to reflect the new value, per the Android Design
+			// guidelines.
+			for(String e : NOTIF_KEYS)
+				bindPreferenceSummaryToValue(findPreference(e));
+		}
+	}
+
+	/**
+	 * A preference value change listener that updates the preference's summary
+	 * to reflect its new value.
+	 */
+	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value)->true;
 
 	/**
 	 * Binds a preference's summary to its value. More specifically, when the
@@ -168,82 +274,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// Set the listener to watch for value changes.
 		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
+
 		// Trigger the listener immediately with the preference's
 		// current value.
-		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-				PreferenceManager
-						.getDefaultSharedPreferences(preference.getContext())
-						.getString(preference.getKey(), ""));
-	}
+		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, pref.getBoolean(preference.getKey(), false));
 
-	/**
-	 * This method stops fragment injection in malicious applications.
-	 * Make sure to deny any unknown fragments here.
-	 */
-	protected boolean isValidFragment(String fragmentName) {
-		return PreferenceFragment.class.getName().equals(fragmentName)
-				|| BoardsPreferenceFragment.class.getName().equals(fragmentName)
-				|| NotificationPreferenceFragment.class.getName().equals(fragmentName);
-	}
-
-	/**
-	 * This fragment shows general preferences only. It is used when the
-	 * activity is showing a two-pane settings UI.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class BoardsPreferenceFragment extends PreferenceFragment {
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_boards);
-			setHasOptionsMenu(true);
-
-			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
-			// to their values. When their values change, their summaries are
-			// updated to reflect the new value, per the Android Design
-			// guidelines.
-			//bindPreferenceSummaryToValue(findPreference("example_text"));
+		if(Utils.equal(preference.getKey(), NOTIF_KEYS[0])) {
+			if(pref.getBoolean(preference.getKey(), false))
+				RSSScheduledServiceHelper.startScheduled(preference.getContext());
+			else
+				RSSScheduledServiceHelper.cancelAlarm(preference.getContext());
 		}
 
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item) {
-			int id = item.getItemId();
-			if (id == android.R.id.home) {
-				startActivity(new Intent(getActivity(), SettingsActivity.class));
-				return true;
-			}
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-	/**
-	 * This fragment shows notification preferences only. It is used when the
-	 * activity is showing a two-pane settings UI.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class NotificationPreferenceFragment extends PreferenceFragment {
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_notification);
-			setHasOptionsMenu(true);
-
-			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
-			// to their values. When their values change, their summaries are
-			// updated to reflect the new value, per the Android Design
-			// guidelines.
-			//bindPreferenceSummaryToValue(findPreference("example_text"));
-		}
-
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item) {
-			int id = item.getItemId();
-			if (id == android.R.id.home) {
-				startActivity(new Intent(getActivity(), SettingsActivity.class));
-				return true;
-			}
-			return super.onOptionsItemSelected(item);
-		}
 	}
 
 }

@@ -3,31 +3,19 @@
 
     <group android:checkableBehavior="single"
            android:id="@+id/group_rss">
-        <item
-            android:id="@+id/nav_rss_main"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/main"/>
-        <item
-            android:id="@+id/nav_rss_missions"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/missions"/>
-        <item
-            android:id="@+id/nav_rss_news"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/news"/>
-        <item
-            android:id="@+id/nav_rss_personal"
-            android:icon="@drawable/ic_rss_feed_white_24dp"
-            android:title="@string/personal"/>
     </group>
 
     <group android:checkableBehavior="single"
            android:id="@+id/group_forums">
         <item
+            android:orderInCategory="1"
+
             android:id="@+id/nav_roadrunner_forum"
             android:icon="@drawable/ic_web_24dp"
             android:title="@string/roadrunner_forums"/>
         <item
+            android:orderInCategory="1"
+
             android:id="@+id/nav_dollars_worldwide"
             android:icon="@drawable/ic_web_24dp"
             android:title="@string/dollars_worldwide"/>
@@ -37,14 +25,20 @@
            android:id="@+id/group_chats">
 
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_chat"
                 android:icon="@drawable/ic_chat_24dp"
                 android:title="@string/chat"/>
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_chat_durarara"
                 android:icon="@drawable/ic_chat_24dp"
                 android:title="@string/durarara_chat"/>
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_chat_dollars_drrr"
                 android:icon="@drawable/ic_chat_24dp"
                 android:title="@string/dollars_chatroom"/>
@@ -65,17 +59,25 @@
            android:id="@+id/group_other">
 
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_tumblr"
                 android:icon="@drawable/ic_web_24dp"
                 android:title="@string/tumblr"/>
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_map"
                 android:icon="@drawable/ic_map_24dp"
                 android:title="@string/map"/>
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_free_rice"
                 android:title="@string/free_rice"/>
             <item
+                android:orderInCategory="1"
+
                 android:id="@+id/nav_kiva"
                 android:title="@string/kiva"/>
 </group>
@@ -83,10 +85,14 @@
     <group android:checkableBehavior="single"
            android:id="@+id/group_settings">
         <item
+            android:orderInCategory="1"
+
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings_24dp"
             android:title="@string/settings"/>
         <item
+            android:orderInCategory="1"
+
             android:id="@+id/nav_feedback"
             android:icon="@drawable/ic_announcement_24dp"
             android:title="@string/send_feedback"/>

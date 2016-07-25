@@ -1,5 +1,6 @@
 package org.dollars_bbs.thedollarscommunity;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -20,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -33,6 +36,7 @@ import android.widget.Toast;
 import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
 import org.dollars_bbs.thedollarscommunity.activities.RegistrationActivity;
 import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
+import org.dollars_bbs.thedollarscommunity.rss_io.RSSScheduledServiceHelper;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSReader;
 import org.mcsoxford.rss.RSSReaderException;
@@ -45,15 +49,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
-	private final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
+	public static final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
 			"http://dollars-bbs.org/comics/index.rss", "http://dollars-bbs.org/films/index.rss", "http://dollars-bbs.org/food/index.rss",
 			"http://dollars-bbs.org/games/index.rss", "http://dollars-bbs.org/literature/index.rss", "http://dollars-bbs.org/music/index.rss",
-			"http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/tech/index.rss",
-			"http://dollars-bbs.org/random/index.rss"},
-			WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
+			"http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/tech/index.rss",
+			"http://dollars-bbs.org/random/index.rss"};
+	public static final String FROM_NOTIFICATION = "from notification",
+			FIRST_OPEN = "first open";
+
+	private final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
+
 
 	private WebView webView;
 	private ListView mainRSS;
@@ -103,13 +111,41 @@ public class MainActivity extends AppCompatActivity
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		if(pref.getBoolean(FIRST_OPEN, true)) {
+			SharedPreferences.Editor prefEdit = pref.edit();
+			for(int j = 0; j < RSS.length; j++)
+				prefEdit.putBoolean(SettingsActivity.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
+
+			prefEdit.putBoolean(FIRST_OPEN, false);
+
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+				prefEdit.apply();
+			else
+				prefEdit.commit();
+
+			if(pref.getBoolean(SettingsActivity.NOTIF_KEYS[0], true))
+				RSSScheduledServiceHelper.startScheduled(this);
+		}
+
+		Menu menu = navigationView.getMenu();
+		for(int i = 0; i < RSS.length; i++) {
+			if (pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
+				menu.add(R.id.group_rss, i, 0, getString(SettingsActivity.BOARDS_TITLE_KEYS[i]))
+						.setIcon(R.drawable.ic_rss_feed_white_24dp);
+			else if(menu.findItem(i) != null)
+				menu.removeItem(i);
+		}
+
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+		if(getIntent().getBooleanExtra(FROM_NOTIFICATION, false))
+			Notifications.resetRSSNotif(getApplicationContext());
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
 		//The first item is selected
 		navigationView.getMenu().getItem(0).setChecked(true);
 		onNavigationItemSelected(navigationView.getMenu().getItem(0));
@@ -180,7 +216,6 @@ public class MainActivity extends AppCompatActivity
 		return super.onOptionsItemSelected(item);
 	}
 
-	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
 		webView.clearHistory();//resets the history so that you can't go back to another nav button's page
@@ -188,62 +223,57 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		switch (id) {
-			case R.id.nav_rss_main:
-				loadRSS(0);
-				break;
-			case R.id.nav_rss_missions:
-				loadRSS(1);
-				break;
-			case R.id.nav_rss_news:
-				loadRSS(2);
-				break;
-			case R.id.nav_rss_personal:
-				loadRSS(12);
-				break;
+		if(item.getSubMenu() == findViewById(R.id.group_rss))
+			for(int i = 0; i < SettingsActivity.BOARDS_TITLE_KEYS.length; i++)
+				if(getString(SettingsActivity.BOARDS_TITLE_KEYS[i]) == item.getTitle())
+					loadRSS(i);
+		else {
+			switch (id) {
+				case R.id.nav_roadrunner_forum:
+					connect(WEBS[0]);
+					break;
+				case R.id.nav_dollars_worldwide:
+					connect(WEBS[1]);
+					break;
 
-			case R.id.nav_roadrunner_forum:
-				connect(WEBS[0]);
-				break;
-			case R.id.nav_dollars_worldwide:
-				connect(WEBS[1]);
-				break;
+				case R.id.nav_chat:
+					if (isRegistered)
+						startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+					else
+						startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
+					break;
+				case R.id.nav_chat_durarara:
+					connect(WEBS[2]);//TODO check url
+					break;
+				case R.id.nav_chat_dollars_drrr:
+					connect(WEBS[3]);//TODO check url
+					break;
 
-			case R.id.nav_chat:
-				if(isRegistered)
-					startActivity(new Intent(getApplicationContext(), ChatActivity.class));
-				else
-					startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
-				break;
-			case R.id.nav_chat_durarara:
-				connect(WEBS[2]);//TODO check url
-				break;
-			case R.id.nav_chat_dollars_drrr:
-				connect(WEBS[3]);//TODO check url
-				break;
+				case R.id.nav_tumblr:
+					connect(WEBS[4]);
+					break;
+				case R.id.nav_map:
+					Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+							Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
+					startActivity(intent);
+					break;
+				case R.id.nav_free_rice:
+					connect(WEBS[5]);
+					break;
+				case R.id.nav_kiva:
+					connect(WEBS[6]);
+					break;
 
-			case R.id.nav_tumblr:
-				connect(WEBS[4]);
-				break;
-			case R.id.nav_map:
-				Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-						Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
-				startActivity(intent);
-				break;
-			case R.id.nav_free_rice:
-				connect(WEBS[5]);
-				break;
-			case R.id.nav_kiva:
-				connect(WEBS[6]);
-				break;
-
-			case R.id.nav_settings:
-				if(!BuildConfig.DEBUG) Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
-				else startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
-				break;
-			case R.id.nav_feedback:
-				connect(WEBS[7]);//TODO check url
-				break;
+				case R.id.nav_settings:
+					if (!BuildConfig.DEBUG)
+						Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
+					else
+						startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
+					break;
+				case R.id.nav_feedback:
+					connect(WEBS[7]);//TODO check url
+					break;
+			}
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -343,7 +373,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	private boolean showErrorIfOffline() {
-		if (isOnline() || Build.FINGERPRINT.contains("generic")) {//isOnline() DOES NOT work on some emulators, hack from here: http://stackoverflow.com/a/5864867/3124150
+		if (Utils.isOnline() || Build.FINGERPRINT.contains("generic")) {//isOnline() DOES NOT work on some emulators, hack from here: http://stackoverflow.com/a/5864867/3124150
 			return true;
 		} else {
 			new AlertDialog.Builder(this)
@@ -358,39 +388,23 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	/**
-	 * Checks for internet.
-	 *
-	 * @return true if there ie internet
-	 */
-	private boolean isOnline() {
-		Runtime runtime = Runtime.getRuntime();
-		try {
-			Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-			int exitValue = ipProcess.waitFor();
-			return (exitValue == 0);
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
 	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 
 
 		//All the webs that don't require selected links to be loaded on other browser
-		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3]};
+		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3], WEBS[4], WEBS[7]};
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (Uri.parse(url).getHost().equals(url) && isSelectWeb(url)) {
-				// This is my web site, so do not override; let my WebView load the page
+			if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
 				return false;
-			}
-			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
-			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-			startActivity(intent);
-			return true;
+			else
+				return overrideUrlLoading(Uri.parse(url));
+
+		}
+
+		@TargetApi(Build.VERSION_CODES.N)
+		public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+			return overrideUrlLoading(request.getUrl());
 		}
 
 		@Override
@@ -405,6 +419,17 @@ public class MainActivity extends AppCompatActivity
 			super.onPageFinished(view, url);
 			progressBar.setVisibility(View.GONE);
 		}
+
+		private boolean overrideUrlLoading(Uri url) {
+			if (isSelectWeb(url.toString()))// This is my web site, so do not override; let my WebView load the page
+				return false;
+			
+			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+			Intent intent = new Intent(Intent.ACTION_VIEW, url);
+			startActivity(intent);
+			return true;
+		}
+
 
 		@SuppressWarnings("deprecation")
 		private void unloadPage() {
