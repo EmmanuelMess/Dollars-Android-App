@@ -46,13 +46,30 @@ public class RSSCheckService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		if (Utils.isOnline()) {
+
 			SharedPreferences rssData = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE),
 					pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			Map<Integer, ArrayList<String>> newRSSFields = new HashMap<>(MainActivity.RSS.length);
+			SharedPreferences.Editor rssDataEditor = rssData.edit();
+			long severTime = -1;
 			boolean notEmpty = false;
 
 			for (int i = 0; i < BOARDS_KEYS.length; i++) {
-				if(!pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
+				if (rssData.getLong(BOARDS_KEYS[i], -1) == -1) {
+					if (severTime == -1) {
+						try {
+							HttpURLConnection tempConnection = (HttpURLConnection) new URL(MainActivity.DOLLARS_BBS).openConnection();
+							tempConnection.connect();
+							severTime = tempConnection.getDate();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					rssDataEditor.putLong(BOARDS_KEYS[i], severTime);
+
+					continue;
+
+				} else if (!pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
 					continue;
 
 				try {
@@ -76,11 +93,7 @@ public class RSSCheckService extends IntentService {
 							} else break;
 						}
 
-						SharedPreferences.Editor e = rssData.edit().putLong(BOARDS_KEYS[i], c.getDate());
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-							e.apply();
-						else
-							e.commit();
+						rssDataEditor.putLong(BOARDS_KEYS[i], c.getDate());
 					}
 
 				} catch (IOException | RSSReaderException e) {
@@ -88,7 +101,12 @@ public class RSSCheckService extends IntentService {
 				}
 			}
 
-			if(notEmpty)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+				rssDataEditor.apply();
+			else
+				rssDataEditor.commit();
+
+			if (notEmpty)
 				Notifications.setRSSNotif(this, newRSSFields);
 		}
 	}

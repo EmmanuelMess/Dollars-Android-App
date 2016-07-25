@@ -49,6 +49,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
+	public static final String DOLLARS_BBS = "http://dollars-bbs.org";
 	public static final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
 			"http://dollars-bbs.org/comics/index.rss", "http://dollars-bbs.org/films/index.rss", "http://dollars-bbs.org/food/index.rss",
@@ -113,16 +114,21 @@ public class MainActivity extends AppCompatActivity
 
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		if(pref.getBoolean(FIRST_OPEN, true)) {
-			SharedPreferences.Editor prefEdit = pref.edit();
-			for(int j = 0; j < RSS.length; j++)
+			SharedPreferences.Editor prefEdit = pref.edit(),
+					rssEdit = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE).edit();
+
+			for(int j = 0; j < RSS.length; j++) {
 				prefEdit.putBoolean(SettingsActivity.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
 
+			}
 			prefEdit.putBoolean(FIRST_OPEN, false);
 
 			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+
 				prefEdit.apply();
-			else
+		else
 				prefEdit.commit();
+
 
 			if(pref.getBoolean(SettingsActivity.NOTIF_KEYS[0], true))
 				RSSScheduledServiceHelper.startScheduled(this);

@@ -26,8 +26,11 @@ public class Notifications {
 		SharedPreferences notifData = context.getSharedPreferences(context.getString(R.string.notif_file_key), Context.MODE_PRIVATE);
 		String notifText = notifData.getString(context.getString(R.string.notif_file_text), "");
 
-		if(!Utils.equal(notifText, ""))
-			notifText = notifText.replace("...", "") + "\n";
+		if(!Utils.equal(notifText, "")) {
+			if(notifText.endsWith("..."))
+				notifText = notifText.replace("...", "");
+			notifText += "\n";
+		}
 
 		for(int i = 0; i < RSSs.size(); i++)
 			if(RSSs.get(i) != null)
