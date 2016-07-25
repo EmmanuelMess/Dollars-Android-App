@@ -25,7 +25,9 @@ public class Notifications {
 	public static void setRSSNotif(Context context, Map<Integer, ArrayList<String>> RSSs) {
 		SharedPreferences notifData = context.getSharedPreferences(context.getString(R.string.notif_file_key), Context.MODE_PRIVATE);
 		String notifText = notifData.getString(context.getString(R.string.notif_file_text), "");
-		notifText = notifText.replace("...", "") + "\n";
+
+		if(!Utils.equal(notifText, ""))
+			notifText = notifText.replace("...", "") + "\n";
 
 		for(int i = 0; i < RSSs.size(); i++)
 			if(RSSs.get(i) != null)
