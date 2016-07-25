@@ -48,10 +48,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
-
 	public static final String FROM_NOTIFICATION = "from notification",
 			FIRST_OPEN = "first open";
 
+	private static final String DOLLARS_MAP = "https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4";
 	private final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
@@ -75,17 +75,6 @@ public class MainActivity extends AppCompatActivity
 		setSupportActionBar(toolbar);
 
 		// TODO: 2016-04-09 ask for INTERNET permission
-		/*
-		//Enable in xml too!
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-						.setAction("Action", null).show();
-			}
-		});
-		*/
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -116,9 +105,8 @@ public class MainActivity extends AppCompatActivity
 			prefEdit.putBoolean(FIRST_OPEN, false);
 
 			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-
 				prefEdit.apply();
-		else
+			else
 				prefEdit.commit();
 
 
@@ -252,7 +240,7 @@ public class MainActivity extends AppCompatActivity
 					break;
 				case R.id.nav_map:
 					Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-							Uri.parse("https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4"));
+							Uri.parse(DOLLARS_MAP));
 					startActivity(intent);
 					break;
 				case R.id.nav_free_rice:
