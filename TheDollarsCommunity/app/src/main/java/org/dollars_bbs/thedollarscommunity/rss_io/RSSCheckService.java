@@ -7,11 +7,10 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
-import org.dollars_bbs.thedollarscommunity.MainActivity;
 import org.dollars_bbs.thedollarscommunity.Notifications;
 import org.dollars_bbs.thedollarscommunity.R;
+import org.dollars_bbs.thedollarscommunity.RSSRelatedConstants;
 import org.dollars_bbs.thedollarscommunity.Utils;
-import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSItem;
 import org.mcsoxford.rss.RSSReader;
@@ -30,9 +29,7 @@ import java.util.Map;
  */
 public class RSSCheckService extends IntentService {
 
-	public static final String[] BOARDS_KEYS = {"mainData", "missionData", "newsData", "animationData", "artData",
-			"comicsData", "filmsData", "foodsData", "gamesData", "literatureData", "musicData", "personalData",
-			"sportsData", "technologyData", "randomData"};
+
 
 	public RSSCheckService() {
 		super("rss update service");
@@ -49,39 +46,37 @@ public class RSSCheckService extends IntentService {
 
 			SharedPreferences rssData = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE),
 					pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			Map<Integer, ArrayList<String>> newRSSFields = new HashMap<>(MainActivity.RSS.length);
+			Map<Integer, ArrayList<String>> newRSSFields = new HashMap<>(RSSRelatedConstants.RSS.length);
 			SharedPreferences.Editor rssDataEditor = rssData.edit();
 			long severTime = -1;
 			boolean notEmpty = false;
 
-			for (int i = 0; i < BOARDS_KEYS.length; i++) {
-				if (rssData.getLong(BOARDS_KEYS[i], -1) == -1) {
+			for (int i = 0; i < RSSRelatedConstants.BOARDS_KEYS.length; i++) {
+				if (rssData.getLong(RSSRelatedConstants.BOARDS_DATA_KEYS[i], -1) == -1) {
 					if (severTime == -1) {
 						try {
-							HttpURLConnection tempConnection = (HttpURLConnection) new URL(MainActivity.DOLLARS_BBS).openConnection();
+							HttpURLConnection tempConnection = (HttpURLConnection) new URL(RSSRelatedConstants.DOLLARS_BBS).openConnection();
 							tempConnection.connect();
 							severTime = tempConnection.getDate();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
-					rssDataEditor.putLong(BOARDS_KEYS[i], severTime);
-
+					rssDataEditor.putLong(RSSRelatedConstants.BOARDS_DATA_KEYS[i], severTime);
 					continue;
-
-				} else if (!pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
+				} else if (!pref.getBoolean(RSSRelatedConstants.BOARDS_KEYS[i], false))
 					continue;
 
 				try {
-					long lastCheck = rssData.getLong(BOARDS_KEYS[i], 0);
-					HttpURLConnection c = (HttpURLConnection) new URL(MainActivity.RSS[i]).openConnection();
+					long lastCheck = rssData.getLong(RSSRelatedConstants.BOARDS_KEYS[i], 0);
+					HttpURLConnection c = (HttpURLConnection) new URL(RSSRelatedConstants.RSS[i]).openConnection();
 					c.setIfModifiedSince(lastCheck);
 					c.connect();
 
 					if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
 						newRSSFields.put(i, new ArrayList<>());
 
-						RSSFeed r = new RSSReader().load(MainActivity.RSS[i]);
+						RSSFeed r = new RSSReader().load(RSSRelatedConstants.RSS[i]);
 
 						for (RSSItem elem : r.getItems()) {
 							HttpURLConnection itemConn = (HttpURLConnection) new URL(elem.getLink().toString()).openConnection();
@@ -93,7 +88,7 @@ public class RSSCheckService extends IntentService {
 							} else break;
 						}
 
-						rssDataEditor.putLong(BOARDS_KEYS[i], c.getDate());
+						rssDataEditor.putLong(RSSRelatedConstants.BOARDS_DATA_KEYS[i], c.getDate());
 					}
 
 				} catch (IOException | RSSReaderException e) {

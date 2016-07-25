@@ -20,8 +20,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.dollars_bbs.thedollarscommunity.MainActivity;
-import org.dollars_bbs.thedollarscommunity.Notifications;
 import org.dollars_bbs.thedollarscommunity.R;
+import org.dollars_bbs.thedollarscommunity.RSSRelatedConstants;
 import org.dollars_bbs.thedollarscommunity.Utils;
 import org.dollars_bbs.thedollarscommunity.rss_io.RSSScheduledServiceHelper;
 
@@ -40,16 +40,6 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
-	public static final String [] BOARDS_KEYS = {"mainPref", "missionPref", "newsPref", "animationPref", "artPref",
-			"comicsPref", "filmsPref", "foodsPref", "gamesPref", "literaturePref", "musicPref", "personalPref",
-			"sportsPref", "technologyPref", "randomPref"},
-									NOTIF_KEYS = {"boardsNotifPref", "globalNotifPref", "localNotifPref", "privateNotifPref"};
-	public static final int [] BOARDS_TITLE_KEYS = {R.string.pref_boards_title_main, R.string.pref_boards_title_missions,
-										R.string.pref_boards_title_news, R.string.pref_boards_title_animation, R.string.pref_boards_title_art,
-								R.string.pref_boards_title_comics, R.string.pref_boards_title_films, R.string.pref_boards_title_food,
-								R.string.pref_boards_title_games, R.string.pref_boards_title_literature, R.string.pref_boards_title_music,
-								R.string.pref_boards_title_personal, R.string.pref_boards_title_sports, R.string.pref_boards_title_technology,
-								R.string.pref_boards_title_random};
 
 	/**
 	 * Determines whether to always show the simplified settings UI, where
@@ -141,10 +131,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// Bind the summaries of EditText/List/Dialog/Ringtone preferences to
 		// their values. When their values change, their summaries are updated
 		// to reflect the new value, per the Android Design guidelines.
-		for (String e : BOARDS_KEYS)
+		for (String e : RSSRelatedConstants.BOARDS_KEYS)
 			bindPreferenceSummaryToValue(findPreference(e));
 
-		for(String e : NOTIF_KEYS)
+		for(String e : RSSRelatedConstants.NOTIF_KEYS)
 			bindPreferenceSummaryToValue(findPreference(e));
 	}
 
@@ -229,7 +219,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			for(String e : BOARDS_KEYS)
+			for(String e : RSSRelatedConstants.BOARDS_KEYS)
 				bindPreferenceSummaryToValue(findPreference(e));
 		}
 	}
@@ -250,7 +240,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			for(String e : NOTIF_KEYS)
+			for(String e : RSSRelatedConstants.NOTIF_KEYS)
 				bindPreferenceSummaryToValue(findPreference(e));
 		}
 	}
@@ -280,7 +270,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 		// current value.
 		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, pref.getBoolean(preference.getKey(), false));
 
-		if(Utils.equal(preference.getKey(), NOTIF_KEYS[0])) {
+		if(Utils.equal(preference.getKey(), RSSRelatedConstants.NOTIF_KEYS[0])) {
 			if(pref.getBoolean(preference.getKey(), false))
 				RSSScheduledServiceHelper.startScheduled(preference.getContext());
 			else

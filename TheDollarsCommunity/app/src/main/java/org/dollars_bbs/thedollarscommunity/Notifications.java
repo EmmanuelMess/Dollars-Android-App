@@ -10,8 +10,6 @@ import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
-import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
-
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -35,7 +33,7 @@ public class Notifications {
 		for(int i = 0; i < RSSs.size(); i++)
 			if(RSSs.get(i) != null)
 				for (String se : RSSs.get(i))
-					notifText += se + "@" + context.getString(SettingsActivity.BOARDS_TITLE_KEYS[i]) + "\n";
+					notifText += se + "@" + context.getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]) + "\n";
 
 		if(Utils.equal(notifText, ""))
 			throw new IllegalArgumentException("Text to show is empty!");
@@ -49,11 +47,16 @@ public class Notifications {
 		else
 			notifDataEdit.commit();
 
+		String smallText = "";
+		if(notifText.contains("\n"))
+			smallText = notifText.substring(0, notifText.indexOf("\n")) + "...";
+		else smallText = notifText;
+
 		NotificationCompat.Builder mBuilder =
 				new NotificationCompat.Builder(context)
 						.setSmallIcon(R.drawable.ic_rss_feed_white_24dp)
 						.setContentTitle("Dollars BBS RSS")
-						.setContentText(notifText.substring(0, notifText.indexOf("\n")) + "...")
+						.setContentText(smallText)
 						.setAutoCancel(true);
 
 		// Creates an explicit intent for an Activity in your app

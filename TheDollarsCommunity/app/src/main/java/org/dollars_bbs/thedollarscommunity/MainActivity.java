@@ -49,13 +49,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
 
-	public static final String DOLLARS_BBS = "http://dollars-bbs.org";
-	public static final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
-			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
-			"http://dollars-bbs.org/comics/index.rss", "http://dollars-bbs.org/films/index.rss", "http://dollars-bbs.org/food/index.rss",
-			"http://dollars-bbs.org/games/index.rss", "http://dollars-bbs.org/literature/index.rss", "http://dollars-bbs.org/music/index.rss",
-			"http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/tech/index.rss",
-			"http://dollars-bbs.org/random/index.rss"};
 	public static final String FROM_NOTIFICATION = "from notification",
 			FIRST_OPEN = "first open";
 
@@ -67,7 +60,7 @@ public class MainActivity extends AppCompatActivity
 	private WebView webView;
 	private ListView mainRSS;
 	private int currentRSSFeedNum = 0, rssLoadFailed = -1;
-	private RSSFeed RSSFeeds[] = new RSSFeed[RSS.length];
+	private RSSFeed RSSFeeds[] = new RSSFeed[RSSRelatedConstants.RSS.length];
 	private ProgressBar progressBar;
 	private ShareActionProvider mShareActionProvider;
 	private NavigationView navigationView;
@@ -114,11 +107,10 @@ public class MainActivity extends AppCompatActivity
 
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		if(pref.getBoolean(FIRST_OPEN, true)) {
-			SharedPreferences.Editor prefEdit = pref.edit(),
-					rssEdit = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE).edit();
+			SharedPreferences.Editor prefEdit = pref.edit();
 
-			for(int j = 0; j < RSS.length; j++) {
-				prefEdit.putBoolean(SettingsActivity.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
+			for(int j = 0; j < RSSRelatedConstants.RSS.length; j++) {
+				prefEdit.putBoolean(RSSRelatedConstants.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
 
 			}
 			prefEdit.putBoolean(FIRST_OPEN, false);
@@ -130,14 +122,14 @@ public class MainActivity extends AppCompatActivity
 				prefEdit.commit();
 
 
-			if(pref.getBoolean(SettingsActivity.NOTIF_KEYS[0], true))
+			if(pref.getBoolean(RSSRelatedConstants.NOTIF_KEYS[0], true))
 				RSSScheduledServiceHelper.startScheduled(this);
 		}
 
 		Menu menu = navigationView.getMenu();
-		for(int i = 0; i < RSS.length; i++) {
-			if (pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
-				menu.add(R.id.group_rss, i, 0, getString(SettingsActivity.BOARDS_TITLE_KEYS[i]))
+		for(int i = 0; i < RSSRelatedConstants.RSS.length; i++) {
+			if (pref.getBoolean(RSSRelatedConstants.BOARDS_KEYS[i], false))
+				menu.add(R.id.group_rss, i, 0, getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]))
 						.setIcon(R.drawable.ic_rss_feed_white_24dp);
 			else if(menu.findItem(i) != null)
 				menu.removeItem(i);
@@ -230,8 +222,8 @@ public class MainActivity extends AppCompatActivity
 		int id = item.getItemId();
 
 		if(item.getSubMenu() == findViewById(R.id.group_rss))
-			for(int i = 0; i < SettingsActivity.BOARDS_TITLE_KEYS.length; i++)
-				if(getString(SettingsActivity.BOARDS_TITLE_KEYS[i]) == item.getTitle())
+			for(int i = 0; i < RSSRelatedConstants.BOARDS_TITLE_KEYS.length; i++)
+				if(getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]) == item.getTitle())
 					loadRSS(i);
 		else {
 			switch (id) {
@@ -342,7 +334,7 @@ public class MainActivity extends AppCompatActivity
 				if (RSSFeeds[RSSNumber] == null) {
 					Thread t = new Thread(()->{// TODO: 2016-03-20 this thread should be an AsyncTask!
 						try {
-							RSSFeeds[RSSNumber] = new RSSReader().load(RSS[RSSNumber]);
+							RSSFeeds[RSSNumber] = new RSSReader().load(RSSRelatedConstants.RSS[RSSNumber]);
 						} catch (RSSReaderException e) {
 							failedFetch(RSSNumber);
 						}
