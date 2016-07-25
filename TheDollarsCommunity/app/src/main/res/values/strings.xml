@@ -13,6 +13,9 @@
     <string name="rss_file_key">RSSData</string>
     <string name="rss_file_boards">BoardsData</string>
 
+    <string name="notif_file_key">NotificationsData</string>
+    <string name="notif_file_text">TextData</string>
+
     <string name="title_activity_password">Password</string>
     <string name="wrong">Wrong!</string>
     <string name="connect">Connect</string>

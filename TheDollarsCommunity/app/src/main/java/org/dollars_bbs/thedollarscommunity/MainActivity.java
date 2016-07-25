@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener {
@@ -56,11 +55,13 @@ public class MainActivity extends AppCompatActivity
 			"http://dollars-bbs.org/games/index.rss", "http://dollars-bbs.org/literature/index.rss", "http://dollars-bbs.org/music/index.rss",
 			"http://dollars-bbs.org/personal/index.rss", "http://dollars-bbs.org/sports/index.rss", "http://dollars-bbs.org/tech/index.rss",
 			"http://dollars-bbs.org/random/index.rss"};
+	public static final String FROM_NOTIFICATION = "from notification",
+			FIRST_OPEN = "first open";
+
 	private final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
 					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
 
-	public static final String FIRST_OPEN = "first open";
 
 	private WebView webView;
 	private ListView mainRSS;
@@ -127,10 +128,9 @@ public class MainActivity extends AppCompatActivity
 				RSSScheduledServiceHelper.startScheduled(this);
 		}
 
-		Map<String, ?> settings = pref.getAll();
 		Menu menu = navigationView.getMenu();
 		for(int i = 0; i < RSS.length; i++) {
-			if (settings.get(SettingsActivity.BOARDS_KEYS[i]) == Boolean.TRUE)
+			if (pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
 				menu.add(R.id.group_rss, i, 0, getString(SettingsActivity.BOARDS_TITLE_KEYS[i]))
 						.setIcon(R.drawable.ic_rss_feed_white_24dp);
 			else if(menu.findItem(i) != null)
@@ -138,6 +138,9 @@ public class MainActivity extends AppCompatActivity
 		}
 
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+		if(getIntent().getBooleanExtra(FROM_NOTIFICATION, false))
+			Notifications.resetRSSNotif(getApplicationContext());
 	}
 
 	@Override

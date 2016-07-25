@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 
 import org.dollars_bbs.thedollarscommunity.MainActivity;
 import org.dollars_bbs.thedollarscommunity.Notifications;
 import org.dollars_bbs.thedollarscommunity.R;
 import org.dollars_bbs.thedollarscommunity.Utils;
+import org.dollars_bbs.thedollarscommunity.activities.SettingsActivity;
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSItem;
 import org.mcsoxford.rss.RSSReader;
@@ -44,11 +46,15 @@ public class RSSCheckService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		if (Utils.isOnline()) {
-			SharedPreferences rssData = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE);
+			SharedPreferences rssData = getApplicationContext().getSharedPreferences(getString(R.string.rss_file_key), Context.MODE_PRIVATE),
+					pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			Map<Integer, ArrayList<String>> newRSSFields = new HashMap<>(MainActivity.RSS.length);
 			boolean notEmpty = false;
 
 			for (int i = 0; i < BOARDS_KEYS.length; i++) {
+				if(!pref.getBoolean(SettingsActivity.BOARDS_KEYS[i], false))
+					continue;
+
 				try {
 					long lastCheck = rssData.getLong(BOARDS_KEYS[i], 0);
 					HttpURLConnection c = (HttpURLConnection) new URL(MainActivity.RSS[i]).openConnection();
@@ -66,7 +72,8 @@ public class RSSCheckService extends IntentService {
 							if (new Date(itemConn.getLastModified()).after(new Date(lastCheck))) {
 								String s = elem.getTitle();
 								newRSSFields.get(i).add(s.substring(0, s.lastIndexOf(" (")));
-							}
+								notEmpty = true;
+							} else break;
 						}
 
 						SharedPreferences.Editor e = rssData.edit().putLong(BOARDS_KEYS[i], c.getDate());
@@ -74,8 +81,6 @@ public class RSSCheckService extends IntentService {
 							e.apply();
 						else
 							e.commit();
-
-						notEmpty = true;
 					}
 
 				} catch (IOException | RSSReaderException e) {
