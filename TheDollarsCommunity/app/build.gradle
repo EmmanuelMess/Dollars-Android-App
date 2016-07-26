@@ -9,7 +9,7 @@ android {
         minSdkVersion 8
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "0.1 alpha"
         vectorDrawables.useSupportLibrary = true
         jackOptions {
             enabled true
@@ -38,9 +38,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
 
-    compile 'com.android.support:support-v4:24.0.0'
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:design:24.0.0'
+    compile 'com.android.support:support-v4:24.1.1'
+    compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'com.android.support:design:24.1.1'
     //RSS handling lib
     compile 'com.github.ahorn:android-rss:v1.0-rc1'
     //Adds to old android versions animations. Needed for date picker
