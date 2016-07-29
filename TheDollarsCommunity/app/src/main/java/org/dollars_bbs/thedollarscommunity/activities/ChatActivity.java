@@ -33,10 +33,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.annotations.SerializedName;
 import com.kosalgeek.android.json.JsonConverter;
-import com.kosalgeek.genasync12.AsyncResponse;
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
 import com.vanniktech.emoji.EmojiEditText;
 import com.vanniktech.emoji.EmojiPopup;
@@ -82,12 +82,11 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-		if (ContextCompat.checkSelfPermission(getApplicationContext(),
-				Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+				!= PackageManager.PERMISSION_GRANTED) {
 			// TODO: 2016-04-09 ask only once!!!
 			ActivityCompat.requestPermissions((RegistrationActivity) getApplicationContext(),
 					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
-
 			// TODO: 2016-04-09 explain the permission
 		} else {
 			hasLocalizationAccess = ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -156,6 +155,12 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		mCollectionPagerAdapter.notifyDataSetChanged();
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		thread.stop();
+	}
+
 	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
 		@Override
 		protected void onPostExecute(Bitmap o) {
@@ -194,7 +199,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	}
 
 	// Instances of this class are fragments representing a single object in our collection.
-	public static class ChatFragment extends Fragment implements AdapterView.OnItemClickListener, AsyncResponse {
+	public static class ChatFragment extends Fragment implements AdapterView.OnItemClickListener {
 		public static final int CHAT = 0, USER_LIST = 1;
 		public static final String ARG_ITEM = "item";
 
@@ -233,7 +238,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 				emojiButton = (ImageView) view.findViewById(R.id.main_activity_emoji);
 				emojiButton.setOnClickListener(v->{
-					//emojiPopup.toggle();
+					emojiPopup.toggle();
 				});
 
 				final EmojiEditText msgText = (EmojiEditText) view.findViewById(R.id.emojiEditText);
@@ -276,20 +281,17 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			if (getView() != null && !equal(msg.replace(" ", ""), "")) {
 				((EditText) getView().findViewById(R.id.emojiEditText)).setText("");
 				HashMap<String, String> data = new HashMap<>();
-				data.put("time", Float.toString(System.currentTimeMillis()));
 				data.put("chat", "global");
-				data.put("nick", userData.getString(getString(R.string.user_file_nick), "missingno"));
-				data.put("isText", Integer.toString(0));
-				data.put("msg", msg);
+				data.put("id_nick", userData.getString(getString(R.string.user_file_nick), "missingno"));//TODO recauchutate
+				data.put("is_text", Integer.toString(0));
+				data.put("msg", "\"" + msg + "\"");
 
-				PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, this);
+				PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
+					if(!equal(jsonString, "success"))
+						Toast.makeText(getContext(), "Message delivery failed: " + jsonString, Toast.LENGTH_LONG).show();
+				}));
 				t.execute(SEVER + PHPs[1]);
 			}
-		}
-
-		@Override
-		public void processFinish(String jsonString) {
-			// TODO: 2016-04-15 check if msg was sent
 		}
 
 		private class ChatRefresherThread {
@@ -306,10 +308,10 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 						if (msgsNeeded != 0 && finished) {
 							finished = false;
 							HashMap<String, String> data = new HashMap<>();
+
 							if (msgsNeeded == 0)
-								data.put("lastId", "0");
-							else
-								data.put("amount", Integer.toString(msgsNeeded));
+								data.put("lastId", "0");//TODO wtf?
+							else data.put("amount", Integer.toString(msgsNeeded));
 
 							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
 								final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
