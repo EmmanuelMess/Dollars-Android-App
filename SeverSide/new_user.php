@@ -12,9 +12,16 @@
 			$tracked = $_POST['isTracked'];
 		else $tracked = 0;
 		
-		$query = "INSET INTO $users_table (nick, avatar, birth, description, gender) VALUES ('$nick', $image, $birth, '$desc', $gender)";
+		$query = "INSET INTO $users_table (nick, avatar, birth, description, gender) VALUES ('$nick', '$image', '$birth', '$desc', '$gender')";
 
 		$result = mysqli_query($conn, $query);
+		
+		if($result) {
+			$querry = "SELECT id FROM $users_table WHERE name = '$nick'";
+			$result = mysqli_query($conn, $query);
+			$row [] = mysqli_fetch_assoc($result);
+			echo(row[0]);
+		}
 	}
-	echo(($result?"succes":"failure"));
+	echo(die(mysqli_error($conn).". Query: '$query'."));
 ?>
