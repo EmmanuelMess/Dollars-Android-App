@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -41,7 +42,12 @@ import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSReader;
 import org.mcsoxford.rss.RSSReaderException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -284,6 +290,7 @@ public class MainActivity extends AppCompatActivity
 				webView.goBack();
 				return true;
 			} else if (currentRSSFeedNum != -1) {//Goes back to RSS list
+				unloadPage();
 				loadRSS(currentRSSFeedNum);
 				return true;
 			}
@@ -296,13 +303,60 @@ public class MainActivity extends AppCompatActivity
 	 * Test the connection, loads url if there's internet,
 	 * shows dialog if not.
 	 *
-	 * @param url the url to load
+	 * @param web the url to load
 	 */
-	private void connect(String url) {
+	private void connect(String web) {
 		mainRSS.setVisibility(View.GONE);
 		webView.setVisibility(View.VISIBLE);
+
+		Uri uri = Uri.parse(web);
+
 		if (showErrorIfOffline()) {
-			webView.loadUrl(url);
+			boolean isFromDollarsBBS = Utils.equal(uri.getHost(), RSSRelatedConstants.DOLLARS_BBS);
+			webView.getSettings().setBuiltInZoomControls(!isFromDollarsBBS);
+
+			if (isFromDollarsBBS) {
+				new AsyncTask<Void, Void, String>() {
+					public void onPreExecute() {
+						progressBar.setVisibility(View.VISIBLE);
+					}
+
+					public String doInBackground(Void v[]) {
+						try {
+							HttpURLConnection c = (HttpURLConnection) new URL(web).openConnection();
+							c.connect();
+
+							String html = "";
+							InputStream content = (InputStream) c.getContent();
+
+							BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+							String s = "";
+							while ((s = buffer.readLine()) != null) {
+								html += s;
+							}
+
+							int start = html.indexOf("<ul id=\"pagemenu\">"),
+									end = html.indexOf("<div id=\"posts\">");
+							html = html.substring(0, start) + html.substring(end);//This deletes the header
+
+							start = html.indexOf("<div id=\"sidebar\">");
+							end = html.indexOf("<div id=\"footer\">");
+							html = html.substring(0, start) + html.substring(end);//This deletes the sidebar
+
+							return html;
+						} catch (IOException e) {
+							e.printStackTrace();
+							return null;
+						}
+					}
+
+					public void onPostExecute(String html) {
+						progressBar.setVisibility(View.GONE);
+						webView.loadDataWithBaseURL("android.resource://" + getPackageName(), html, "text/html", "UTF-8", null);
+					}
+				}.execute();
+			} else
+				webView.loadUrl(web);
 		}
 	}
 
@@ -314,41 +368,45 @@ public class MainActivity extends AppCompatActivity
 		mainRSS.setVisibility(View.VISIBLE);
 
 		if (showErrorIfOffline()) {
-			final ArrayList<String> items = new ArrayList<>();
-			progressBar.setVisibility(View.VISIBLE);
-			currentRSSFeedNum = RSSNumber;
+			AdapterView.OnItemClickListener l = this;
 
-			try {
-				if (RSSFeeds[RSSNumber] == null) {
-					Thread t = new Thread(()->{// TODO: 2016-03-20 this thread should be an AsyncTask!
+			new AsyncTask<Void, Void, Void>() {
+				ArrayList<String> items = new ArrayList<>();
+
+				public void onPreExecute() {
+					progressBar.setVisibility(View.VISIBLE);
+					currentRSSFeedNum = RSSNumber;
+				}
+
+				public Void doInBackground(Void v[]) {
+					if (RSSFeeds[RSSNumber] == null) {
 						try {
 							RSSFeeds[RSSNumber] = new RSSReader().load(RSSRelatedConstants.RSS[RSSNumber]);
 						} catch (RSSReaderException e) {
 							failedFetch(RSSNumber);
 						}
-					});
+					}
 
-					t.start(); // spawn thread
-					t.join();  // wait for thread to finish
+					return null;
 				}
-			} catch (InterruptedException e) {
-				failedFetch(RSSNumber);
-			}
 
-			if (RSSFeeds[RSSNumber] != null) {
-				for (int i = 0; i < 20 && RSSFeeds[RSSNumber].getItems().size() > i; i++)
-					items.add(RSSFeeds[RSSNumber].getItems().get(i).getTitle());
+				public void onPostExecute(Void v) {
+					if (RSSFeeds[RSSNumber] != null) {
+						for (int i = 0; i < 20 && RSSFeeds[RSSNumber].getItems().size() > i; i++)
+							items.add(RSSFeeds[RSSNumber].getItems().get(i).getTitle());
 
-				rssLoadFailed = -1;
-			} else {
-				items.add(getApplicationContext().getString(R.string.failed_feed_load));
-			}
+						rssLoadFailed = -1;
+					} else {
+						items.add(getApplicationContext().getString(R.string.failed_feed_load));
+					}
 
-			progressBar.setVisibility(View.GONE);
+					progressBar.setVisibility(View.GONE);
 
-			final PArrayAdapter adapter = new PArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, items);
-			mainRSS.setAdapter(adapter);
-			mainRSS.setOnItemClickListener(this);
+					PArrayAdapter adapter = new PArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, items);
+					mainRSS.setAdapter(adapter);
+					mainRSS.setOnItemClickListener(l);
+				}
+			}.execute();
 		}
 	}
 
@@ -371,6 +429,17 @@ public class MainActivity extends AppCompatActivity
 					.create()
 					.show();
 			return false;
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public void unloadPage() {
+		webView.destroyDrawingCache();
+
+		if (Build.VERSION.SDK_INT >= 18) {
+			webView.loadUrl("about:blank");
+		} else {
+			webView.clearView();
 		}
 	}
 
@@ -414,18 +483,6 @@ public class MainActivity extends AppCompatActivity
 			Intent intent = new Intent(Intent.ACTION_VIEW, url);
 			startActivity(intent);
 			return true;
-		}
-
-
-		@SuppressWarnings("deprecation")
-		private void unloadPage() {
-			webView.destroyDrawingCache();
-
-			if (Build.VERSION.SDK_INT >= 18) {
-				webView.loadUrl("about:blank");
-			} else {
-				webView.clearView();
-			}
 		}
 
 		private boolean isSelectWeb(String web) {

@@ -5,7 +5,7 @@ package org.dollars_bbs.thedollarscommunity;
  *         on 2016-07-25, at 18:01.
  */
 public class RSSRelatedConstants {
-	public static final String DOLLARS_BBS = "http://dollars-bbs.org";
+	public static final String DOLLARS_BBS = "dollars-bbs.org";
 
 	public static final String[] RSS = {"http://dollars-bbs.org/main/index.rss", "http://dollars-bbs.org/missions/index.rss",
 			"http://dollars-bbs.org/news/index.rss", "http://dollars-bbs.org/animation/index.rss", "http://dollars-bbs.org/art/index.rss",
