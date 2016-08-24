@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,7 +36,6 @@ public class IO {
 		return null;
 	}
 
-	@NonNull
 	public static boolean saveImage(Bitmap b, int dataType) throws IOException {
 		switch(dataType) {
 			case USER_IMAGE://http://stackoverflow.com/a/9397142/3124150 (modified).

@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24"
+    buildToolsVersion "24.0.1"
 
     defaultConfig {
         applicationId "org.dollars_bbs.thedollarscommunity"
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion 24
         versionCode 1
         versionName "0.1 alpha"
@@ -38,9 +38,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
 
-    compile 'com.android.support:support-v4:24.1.1'
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.android.support:design:24.1.1'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.android.support:design:24.2.0'
     //RSS handling lib
     compile 'com.github.ahorn:android-rss:v1.0-rc1'
     //Adds to old android versions animations. Needed for date picker

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -144,11 +143,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
 		View.OnClickListener registerL = v->{
 			userDataEditor.putInt(getString(R.string.user_file_registered), 1);
-
-			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-				userDataEditor.apply();
-			else
-				userDataEditor.commit();
+			userDataEditor.apply();
 
 			startActivity(new Intent(getApplicationContext(), ChatActivity.class));
 		};

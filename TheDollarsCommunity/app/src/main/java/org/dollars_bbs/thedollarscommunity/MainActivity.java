@@ -110,10 +110,7 @@ public class MainActivity extends AppCompatActivity
 			}
 			prefEdit.putBoolean(FIRST_OPEN, false);
 
-			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-				prefEdit.apply();
-			else
-				prefEdit.commit();
+			prefEdit.apply();
 
 
 			if(pref.getBoolean(RSSRelatedConstants.NOTIF_KEYS[0], true))
@@ -343,6 +340,17 @@ public class MainActivity extends AppCompatActivity
 							end = html.indexOf("<div id=\"footer\">");
 							html = html.substring(0, start) + html.substring(end);//This deletes the sidebar
 
+
+							html = "<style media=\"screen\" type=\"text/css\">" +
+									"body {\n" +
+									"\tpadding: 8px;\n" +
+									"\tmargin: auto;\n" +
+									"\tbackground-color: #000000;\n" +
+									"\tcolor: #FFFFFF;\n" +
+									"\tfont-family: Tahoma;\n" +
+									"} \n"+
+									"#posts {}" + "</style>" + html;
+
 							return html;
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -352,7 +360,7 @@ public class MainActivity extends AppCompatActivity
 
 					public void onPostExecute(String html) {
 						progressBar.setVisibility(View.GONE);
-						webView.loadDataWithBaseURL("android.resource://" + getPackageName(), html, "text/html", "UTF-8", null);
+						webView.loadDataWithBaseURL("https://dollars-bbs.org/main/css/", html, "text/html", "UTF-8", null);
 					}
 				}.execute();
 			} else
