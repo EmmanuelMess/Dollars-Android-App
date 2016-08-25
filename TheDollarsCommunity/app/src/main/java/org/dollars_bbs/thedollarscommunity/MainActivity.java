@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity
 	private ShareActionProvider mShareActionProvider;
 	private NavigationView navigationView;
 	private boolean isRegistered;
+	private AsyncTask asyncWebViewLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -283,10 +284,10 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (webView.canGoBack()) {//Goes back to last page
-				webView.goBack();
+			if (webView.canGoBack()) {
+				webView.goBack();//Goes back to last page
 				return true;
-			} else if (currentRSSFeedNum != -1) {//Goes back to RSS list
+			} else if (currentRSSFeedNum != -1 && mainRSS.getVisibility() == View.GONE) {//Goes back to RSS list
 				unloadPage();
 				loadRSS(currentRSSFeedNum);
 				return true;
@@ -313,7 +314,7 @@ public class MainActivity extends AppCompatActivity
 			webView.getSettings().setBuiltInZoomControls(!isFromDollarsBBS);
 
 			if (isFromDollarsBBS) {
-				new AsyncTask<Void, Void, String>() {
+				asyncWebViewLoader = new AsyncTask<Void, Void, String>() {
 					public void onPreExecute() {
 						progressBar.setVisibility(View.VISIBLE);
 					}
@@ -340,16 +341,31 @@ public class MainActivity extends AppCompatActivity
 							end = html.indexOf("<div id=\"footer\">");
 							html = html.substring(0, start) + html.substring(end);//This deletes the sidebar
 
-
-							html = "<style media=\"screen\" type=\"text/css\">" +
-									"body {\n" +
-									"\tpadding: 8px;\n" +
-									"\tmargin: auto;\n" +
-									"\tbackground-color: #000000;\n" +
-									"\tcolor: #FFFFFF;\n" +
-									"\tfont-family: Tahoma;\n" +
-									"} \n"+
-									"#posts {}" + "</style>" + html;
+							html = html.replace("</head>",
+									"<style media=\"screen\" type=\"text/css\">" +
+									"body {" +
+										"width: inherit;" +
+									"}" +
+									"#posts {" +
+										"float: none;" +
+										"width: inherit;" +
+									"}" +
+									"#posts .thread {" +
+										"padding: 0px;" +
+									"}" +
+									"#posts .allreplies {" +
+										"margin: 0px;" +
+										"padding: 15px;" +
+									"}" +
+									"#posts .reply {" +
+										"margin: 1px;" +
+										"padding: 0px;" +
+									"}" +
+									".replytext {" +
+										"padding: 10px;" +
+									"}" +
+									"</style>" +
+									"</head>");
 
 							return html;
 						} catch (IOException e) {
@@ -360,7 +376,7 @@ public class MainActivity extends AppCompatActivity
 
 					public void onPostExecute(String html) {
 						progressBar.setVisibility(View.GONE);
-						webView.loadDataWithBaseURL("https://dollars-bbs.org/main/css/", html, "text/html", "UTF-8", null);
+						webView.loadDataWithBaseURL("http://dollars-bbs.org/main/css/", html, "text/html", "UTF-8", null);
 					}
 				}.execute();
 			} else
@@ -443,6 +459,13 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("deprecation")
 	public void unloadPage() {
 		webView.destroyDrawingCache();
+
+		if (asyncWebViewLoader != null && asyncWebViewLoader.getStatus() != AsyncTask.Status.FINISHED) {
+			progressBar.setVisibility(View.GONE);
+			asyncWebViewLoader.cancel(true);
+		} else
+			asyncWebViewLoader = null;
+
 
 		if (Build.VERSION.SDK_INT >= 18) {
 			webView.loadUrl("about:blank");
