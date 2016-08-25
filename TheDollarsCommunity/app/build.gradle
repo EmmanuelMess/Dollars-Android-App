@@ -50,5 +50,5 @@ dependencies {
     //Google's gson lib
     compile 'com.google.code.gson:gson:2.4'
     //emoji keyboard
-    compile 'com.github.EmmanuelMess:Emoji-API-8-version:master-SNAPSHOT'
+    compile 'com.github.EmmanuelMess:Emoji-API-8-version:0.2.1'
 }
