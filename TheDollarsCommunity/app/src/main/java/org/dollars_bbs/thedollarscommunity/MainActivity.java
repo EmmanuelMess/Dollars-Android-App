@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity
 
 	private static final String DOLLARS_MAP = "https://www.google.com/maps/d/edit?mid=z2X8CpD7CsTQ.kxb7k1wenQa4";
 	private final String[] WEBS = {"http://roadrunner-forums.com/boards/", "http://dollars-worldwide.org/community/", "http://www.drrrchat.com/",
-					"http://drrr.com/",	"http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
-					"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
+			"http://drrr.com/", "http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
+			"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
 
 
 	private WebView webView;
@@ -71,7 +71,8 @@ public class MainActivity extends AppCompatActivity
 	private ShareActionProvider mShareActionProvider;
 	private NavigationView navigationView;
 	private boolean isRegistered;
-	private AsyncTask asyncWebViewLoader;
+	private AsyncTask<String, Void, String> asyncWebViewLoader;
+	private AsyncTask<Integer, Void, Void> asyncRSSLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,10 +103,10 @@ public class MainActivity extends AppCompatActivity
 		mainRSS = (ListView) findViewById(R.id.main_rss);
 
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		if(pref.getBoolean(FIRST_OPEN, true)) {
+		if (pref.getBoolean(FIRST_OPEN, true)) {
 			SharedPreferences.Editor prefEdit = pref.edit();
 
-			for(int j = 0; j < RSSRelatedConstants.RSS.length; j++) {
+			for (int j = 0; j < RSSRelatedConstants.RSS.length; j++) {
 				prefEdit.putBoolean(RSSRelatedConstants.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
 
 			}
@@ -114,22 +115,22 @@ public class MainActivity extends AppCompatActivity
 			prefEdit.apply();
 
 
-			if(pref.getBoolean(RSSRelatedConstants.NOTIF_KEYS[0], true))
+			if (pref.getBoolean(RSSRelatedConstants.NOTIF_KEYS[0], true))
 				RSSScheduledServiceHelper.startScheduled(this);
 		}
 
 		Menu menu = navigationView.getMenu();
-		for(int i = 0; i < RSSRelatedConstants.RSS.length; i++) {
+		for (int i = 0; i < RSSRelatedConstants.RSS.length; i++) {
 			if (pref.getBoolean(RSSRelatedConstants.BOARDS_KEYS[i], false))
 				menu.add(R.id.group_rss, i, 0, getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]))
 						.setIcon(R.drawable.ic_rss_feed_white_24dp);
-			else if(menu.findItem(i) != null)
+			else if (menu.findItem(i) != null)
 				menu.removeItem(i);
 		}
 
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-		if(getIntent().getBooleanExtra(FROM_NOTIFICATION, false))
+		if (getIntent().getBooleanExtra(FROM_NOTIFICATION, false))
 			Notifications.resetRSSNotif(getApplicationContext());
 	}
 
@@ -145,7 +146,7 @@ public class MainActivity extends AppCompatActivity
 		SharedPreferences userData = getApplicationContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
 		isRegistered = userData.getInt(getString(R.string.user_file_registered), 0) == 1;
 
-		if(isRegistered) {
+		if (isRegistered) {
 			Bitmap userImage = null;
 			try {
 				userImage = IO.recoverImage(IO.USER_IMAGE);
@@ -213,58 +214,58 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		if(item.getSubMenu() == findViewById(R.id.group_rss))
-			for(int i = 0; i < RSSRelatedConstants.BOARDS_TITLE_KEYS.length; i++)
-				if(getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]) == item.getTitle())
+		if (item.getSubMenu() == findViewById(R.id.group_rss))
+			for (int i = 0; i < RSSRelatedConstants.BOARDS_TITLE_KEYS.length; i++)
+				if (getString(RSSRelatedConstants.BOARDS_TITLE_KEYS[i]) == item.getTitle())
 					loadRSS(i);
-		else {
-			switch (id) {
-				case R.id.nav_roadrunner_forum:
-					connect(WEBS[0]);
-					break;
-				case R.id.nav_dollars_worldwide:
-					connect(WEBS[1]);
-					break;
+				else {
+					switch (id) {
+						case R.id.nav_roadrunner_forum:
+							connect(WEBS[0]);
+							break;
+						case R.id.nav_dollars_worldwide:
+							connect(WEBS[1]);
+							break;
 
-				case R.id.nav_chat:
-					if (isRegistered)
-						startActivity(new Intent(getApplicationContext(), ChatActivity.class));
-					else
-						startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
-					break;
-				case R.id.nav_chat_durarara:
-					connect(WEBS[2]);//TODO check url
-					break;
-				case R.id.nav_chat_dollars_drrr:
-					connect(WEBS[3]);//TODO check url
-					break;
+						case R.id.nav_chat:
+							if (isRegistered)
+								startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+							else
+								startActivity(new Intent(getApplicationContext(), RegistrationActivity.class));
+							break;
+						case R.id.nav_chat_durarara:
+							connect(WEBS[2]);//TODO check url
+							break;
+						case R.id.nav_chat_dollars_drrr:
+							connect(WEBS[3]);//TODO check url
+							break;
 
-				case R.id.nav_tumblr:
-					connect(WEBS[4]);
-					break;
-				case R.id.nav_map:
-					Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-							Uri.parse(DOLLARS_MAP));
-					startActivity(intent);
-					break;
-				case R.id.nav_free_rice:
-					connect(WEBS[5]);
-					break;
-				case R.id.nav_kiva:
-					connect(WEBS[6]);
-					break;
+						case R.id.nav_tumblr:
+							connect(WEBS[4]);
+							break;
+						case R.id.nav_map:
+							Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+									Uri.parse(DOLLARS_MAP));
+							startActivity(intent);
+							break;
+						case R.id.nav_free_rice:
+							connect(WEBS[5]);
+							break;
+						case R.id.nav_kiva:
+							connect(WEBS[6]);
+							break;
 
-				case R.id.nav_settings:
-					if (!BuildConfig.DEBUG)
-						Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
-					else
-						startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
-					break;
-				case R.id.nav_feedback:
-					connect(WEBS[7]);//TODO check url
-					break;
-			}
-		}
+						case R.id.nav_settings:
+							if (!BuildConfig.DEBUG)
+								Toast.makeText(getApplicationContext(), "Not yet", Toast.LENGTH_LONG).show();
+							else
+								startActivity(new Intent(getApplicationContext(), SettingsActivity.class));// TODO: 2016-04-10
+							break;
+						case R.id.nav_feedback:
+							connect(WEBS[7]);//TODO check url
+							break;
+					}
+				}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		if (drawer != null)
@@ -314,71 +315,8 @@ public class MainActivity extends AppCompatActivity
 			webView.getSettings().setBuiltInZoomControls(!isFromDollarsBBS);
 
 			if (isFromDollarsBBS) {
-				asyncWebViewLoader = new AsyncTask<Void, Void, String>() {
-					public void onPreExecute() {
-						progressBar.setVisibility(View.VISIBLE);
-					}
-
-					public String doInBackground(Void v[]) {
-						try {
-							HttpURLConnection c = (HttpURLConnection) new URL(web).openConnection();
-							c.connect();
-
-							String html = "";
-							InputStream content = (InputStream) c.getContent();
-
-							BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
-							String s = "";
-							while ((s = buffer.readLine()) != null) {
-								html += s;
-							}
-
-							int start = html.indexOf("<ul id=\"pagemenu\">"),
-									end = html.indexOf("<div id=\"posts\">");
-							html = html.substring(0, start) + html.substring(end);//This deletes the header
-
-							start = html.indexOf("<div id=\"sidebar\">");
-							end = html.indexOf("<div id=\"footer\">");
-							html = html.substring(0, start) + html.substring(end);//This deletes the sidebar
-
-							html = html.replace("</head>",
-									"<style media=\"screen\" type=\"text/css\">" +
-									"body {" +
-										"width: inherit;" +
-									"}" +
-									"#posts {" +
-										"float: none;" +
-										"width: inherit;" +
-									"}" +
-									"#posts .thread {" +
-										"padding: 0px;" +
-									"}" +
-									"#posts .allreplies {" +
-										"margin: 0px;" +
-										"padding: 15px;" +
-									"}" +
-									"#posts .reply {" +
-										"margin: 1px;" +
-										"padding: 0px;" +
-									"}" +
-									".replytext {" +
-										"padding: 10px;" +
-									"}" +
-									"</style>" +
-									"</head>");
-
-							return html;
-						} catch (IOException e) {
-							e.printStackTrace();
-							return null;
-						}
-					}
-
-					public void onPostExecute(String html) {
-						progressBar.setVisibility(View.GONE);
-						webView.loadDataWithBaseURL("http://dollars-bbs.org/main/css/", html, "text/html", "UTF-8", null);
-					}
-				}.execute();
+				asyncWebViewLoader = new LoadDollarsBBSAsyncTask();
+				asyncWebViewLoader.execute(web);
 			} else
 				webView.loadUrl(web);
 		}
@@ -392,45 +330,8 @@ public class MainActivity extends AppCompatActivity
 		mainRSS.setVisibility(View.VISIBLE);
 
 		if (showErrorIfOffline()) {
-			AdapterView.OnItemClickListener l = this;
-
-			new AsyncTask<Void, Void, Void>() {
-				ArrayList<String> items = new ArrayList<>();
-
-				public void onPreExecute() {
-					progressBar.setVisibility(View.VISIBLE);
-					currentRSSFeedNum = RSSNumber;
-				}
-
-				public Void doInBackground(Void v[]) {
-					if (RSSFeeds[RSSNumber] == null) {
-						try {
-							RSSFeeds[RSSNumber] = new RSSReader().load(RSSRelatedConstants.RSS[RSSNumber]);
-						} catch (RSSReaderException e) {
-							failedFetch(RSSNumber);
-						}
-					}
-
-					return null;
-				}
-
-				public void onPostExecute(Void v) {
-					if (RSSFeeds[RSSNumber] != null) {
-						for (int i = 0; i < 20 && RSSFeeds[RSSNumber].getItems().size() > i; i++)
-							items.add(RSSFeeds[RSSNumber].getItems().get(i).getTitle());
-
-						rssLoadFailed = -1;
-					} else {
-						items.add(getApplicationContext().getString(R.string.failed_feed_load));
-					}
-
-					progressBar.setVisibility(View.GONE);
-
-					PArrayAdapter adapter = new PArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, items);
-					mainRSS.setAdapter(adapter);
-					mainRSS.setOnItemClickListener(l);
-				}
-			}.execute();
+			asyncRSSLoader = new LoadRSSAsyncTask(this);
+			asyncRSSLoader.execute(RSSNumber);
 		}
 	}
 
@@ -463,9 +364,7 @@ public class MainActivity extends AppCompatActivity
 		if (asyncWebViewLoader != null && asyncWebViewLoader.getStatus() != AsyncTask.Status.FINISHED) {
 			progressBar.setVisibility(View.GONE);
 			asyncWebViewLoader.cancel(true);
-		} else
-			asyncWebViewLoader = null;
-
+		}
 
 		if (Build.VERSION.SDK_INT >= 18) {
 			webView.loadUrl("about:blank");
@@ -474,14 +373,124 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView 
+	private class LoadRSSAsyncTask extends AsyncTask<Integer, Void, Void> {
+		ArrayList<String> items = new ArrayList<>();
+		AdapterView.OnItemClickListener itemListener = null;
+
+		public LoadRSSAsyncTask(AdapterView.OnItemClickListener l) {
+			itemListener = l;
+		}
+
+		public void onPreExecute() {
+			progressBar.setVisibility(View.VISIBLE);
+		}
+
+		public Void doInBackground(Integer... RSSNumber) {
+			currentRSSFeedNum = RSSNumber[0];
+
+			if (RSSFeeds[currentRSSFeedNum] == null) {
+				try {
+					RSSFeeds[currentRSSFeedNum] = new RSSReader().load(RSSRelatedConstants.RSS[currentRSSFeedNum]);
+				} catch (RSSReaderException e) {
+					failedFetch(currentRSSFeedNum);
+				}
+			}
+
+			return null;
+		}
+
+		public void onPostExecute(Void v) {
+			if (RSSFeeds[currentRSSFeedNum] != null) {
+				for (int i = 0; i < 20 && RSSFeeds[currentRSSFeedNum].getItems().size() > i; i++)
+					items.add(RSSFeeds[currentRSSFeedNum].getItems().get(i).getTitle());
+
+				rssLoadFailed = -1;
+			} else {
+				items.add(getApplicationContext().getString(R.string.failed_feed_load));
+			}
+
+			progressBar.setVisibility(View.GONE);
+
+			PArrayAdapter adapter = new PArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, items);
+			mainRSS.setAdapter(adapter);
+			mainRSS.setOnItemClickListener(itemListener);
+		}
+	}
+
+	private class LoadDollarsBBSAsyncTask extends AsyncTask<String, Void, String> {
+		public void onPreExecute() {
+			progressBar.setVisibility(View.VISIBLE);
+		}
+
+		public String doInBackground(String... web) {
+			try {
+				HttpURLConnection c = (HttpURLConnection) new URL(web[0]).openConnection();
+				c.connect();
+
+				String html = "";
+				InputStream content = (InputStream) c.getContent();
+
+				BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+				String s = "";
+				while ((s = buffer.readLine()) != null) {
+					html += s;
+				}
+
+				int start = html.indexOf("<ul id=\"pagemenu\">"),
+						end = html.indexOf("<div id=\"posts\">");
+				html = html.substring(0, start) + html.substring(end);//This deletes the header
+
+				start = html.indexOf("<div id=\"sidebar\">");
+				end = html.indexOf("<div id=\"footer\">");
+				html = html.substring(0, start) + html.substring(end);//This deletes the sidebar
+
+				html = html.replace("</head>",
+						"<style media=\"screen\" type=\"text/css\">" +
+								"body {" +
+								"width: inherit;" +
+								"}" +
+								"#posts {" +
+								"float: none;" +
+								"width: inherit;" +
+								"}" +
+								"#posts .thread {" +
+								"padding: 0px;" +
+								"}" +
+								"#posts .allreplies {" +
+								"margin: 0px;" +
+								"padding: 15px;" +
+								"}" +
+								"#posts .reply {" +
+								"margin: 1px;" +
+								"padding: 0px;" +
+								"}" +
+								".replytext {" +
+								"padding: 10px;" +
+								"}" +
+								"</style>" +
+								"</head>");
+
+				return html;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		public void onPostExecute(String html) {
+			progressBar.setVisibility(View.GONE);
+			webView.loadDataWithBaseURL("http://dollars-bbs.org/main/css/", html, "text/html", "UTF-8", null);
+		}
+	}
+
+	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView
 
 		//All the webs that don't require selected links to be loaded on other browser
-		private final String[] SELECT_WEBS = {WEBS[0],  WEBS[1],  WEBS[2], WEBS[3], WEBS[4], WEBS[7]};
+		private final String[] SELECT_WEBS = {WEBS[0], WEBS[1], WEBS[2], WEBS[3], WEBS[4], WEBS[7]};
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
 				return false;
 			else
 				return overrideUrlLoading(Uri.parse(url));
@@ -509,16 +518,16 @@ public class MainActivity extends AppCompatActivity
 		private boolean overrideUrlLoading(Uri url) {
 			if (isSelectWeb(url.toString()))// This is my web site, so do not override; let my WebView load the page
 				return false;
-			
-			// Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+
+			// Otherwise, the link is not for asyncRSSLoader page on my site, so launch another Activity that handles URLs
 			Intent intent = new Intent(Intent.ACTION_VIEW, url);
 			startActivity(intent);
 			return true;
 		}
 
 		private boolean isSelectWeb(String web) {
-			for(String w : SELECT_WEBS) {
-				if(Utils.equal(w, web)) return true;
+			for (String w : SELECT_WEBS) {
+				if (Utils.equal(w, web)) return true;
 			}
 
 			return false;
