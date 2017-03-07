@@ -31,12 +31,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.annotations.SerializedName;
-import com.kosalgeek.android.json.JsonConverter;
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
 import com.vanniktech.emoji.EmojiEditText;
 import com.vanniktech.emoji.EmojiPopup;
@@ -48,6 +47,16 @@ import org.dollars_bbs.thedollarscommunity.R;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
@@ -65,6 +74,9 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	private static ChatFragment.ChatRefresherThread thread;
 	private static EmojiPopup emojiPopup;
 	private static ImageView emojiButton;
+	private static LayoutInflater inflater;
+	private static boolean activityActive = false;
+	private static String nick;
 
 	// When requested, this adapter returns a Fragment, representing an object in the collection.
 	PCollectionPagerAdapter mCollectionPagerAdapter;
@@ -74,6 +86,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
+
+		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -85,7 +99,7 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
 				!= PackageManager.PERMISSION_GRANTED) {
 			// TODO: 2016-04-09 ask only once!!!
-			ActivityCompat.requestPermissions((RegistrationActivity) getApplicationContext(),
+			ActivityCompat.requestPermissions( this,
 					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
 			// TODO: 2016-04-09 explain the permission
 		} else {
@@ -98,7 +112,24 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		assert mViewPager != null;
 		mViewPager.setAdapter(mCollectionPagerAdapter);
+
+		SharedPreferences userData = getApplicationContext()
+				.getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
+		nick = userData.getString(getString(R.string.user_file_nick), "missingno");
 	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		activityActive = false;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		activityActive = true;
+	}
+
 
 	@Override
 	public void onBackPressed() {
@@ -170,8 +201,8 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		}
 	}
 
-	public class PCollectionPagerAdapter extends FragmentPagerAdapter {
-		public PCollectionPagerAdapter(FragmentManager fm) {
+	private class PCollectionPagerAdapter extends FragmentPagerAdapter {
+		PCollectionPagerAdapter(FragmentManager fm) {
 			super(fm);
 		}
 
@@ -206,14 +237,14 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 		private ArrayList<String> nicks = new ArrayList<>();
 		private ArrayList<String> msgs = new ArrayList<>();
 		private int FRAGMENT_TYPE;
-		private SharedPreferences userData;
 		private ChatItemAdapter mAdapter;
+
+		private MessageService service;
 
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			FRAGMENT_TYPE = getArguments().getInt(ARG_ITEM);
-			userData = getContext().getSharedPreferences(getString(R.string.user_file_key), Context.MODE_PRIVATE);
 		}
 
 		@Override
@@ -227,14 +258,21 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			super.onViewCreated(view, savedInstanceState);
 
 			if (FRAGMENT_TYPE == CHAT) {
+				Retrofit retrofit = new Retrofit.Builder()
+						.baseUrl("https://dollarscommunity.herokuapp.com")
+						.addConverterFactory(GsonConverterFactory.create())
+						.build();
+
+				service = retrofit.create(MessageService.class);
+
 				View msgingLayout = view.findViewById(R.id.msgingLayout);
 				assert msgingLayout != null;
 				msgingLayout.setVisibility(View.VISIBLE);
 
 				mAdapter = new ChatItemAdapter(getContext(), R.layout.item_chat, null, nicks, msgs);
-				ListView chatBox = (ListView) view.findViewById(R.id.chatView);
+				/*ListView chatBox = (ListView) view.findViewById(R.id.chatView);
 				chatBox.setAdapter(mAdapter);
-				chatBox.setOnItemClickListener(this);
+				chatBox.setOnItemClickListener(this);*/
 
 				emojiButton = (ImageView) view.findViewById(R.id.main_activity_emoji);
 				emojiButton.setOnClickListener(v->{
@@ -280,18 +318,68 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			if (BuildConfig.DEBUG && FRAGMENT_TYPE != CHAT) throw new AssertionError();
 			if (getView() != null && !equal(msg.replace(" ", ""), "")) {
 				((EditText) getView().findViewById(R.id.emojiEditText)).setText("");
-				HashMap<String, String> data = new HashMap<>();
-				data.put("chat", "global");
-				data.put("id_nick", userData.getString(getString(R.string.user_file_nick), "missingno"));//TODO recauchutate
-				data.put("is_text", Integer.toString(0));
-				data.put("msg", "\"" + msg + "\"");
+				Message message = new Message(nick, false, msg);
+				Call<Message> createCall = service.create(message);
+				createCall.enqueue(new Callback<Message>() {
+					@Override
+					public void onResponse(Call<Message> _, Response<Message> resp) {
+						if(resp.code() != 200) {
+							Toast.makeText(getContext(), "Error " + resp.code()
+											+ ": " + resp.message(),
+									Toast.LENGTH_SHORT).show();
+						}
+					}
 
-				PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
-					if(!equal(jsonString, "success"))
-						Toast.makeText(getContext(), "Message delivery failed: " + jsonString, Toast.LENGTH_LONG).show();
-				}));
-				t.execute(SEVER + PHPs[1]);
+					@Override
+					public void onFailure(Call<Message> _, Throwable t) {
+						t.printStackTrace();
+						Toast.makeText(getContext(), "Error sending", Toast.LENGTH_LONG).show();
+					}
+				});
 			}
+		}
+
+		class Message {
+			@SerializedName("nick")
+			String nick;
+
+			@SerializedName("isimage")
+			boolean isimage;
+
+			@SerializedName("msg")
+			String msg;
+
+			//@SerializedName("img")
+			//ByteArray img;
+
+			Message(String nick, boolean isimage, String msg) {
+				this.nick = nick;
+				this.isimage = isimage;
+				this.msg = msg;
+			}
+		}
+
+		interface MessageService {
+			@GET("message")
+			Call<List<Message>> all();
+
+			@GET("message/{nick}")
+			Call<Message> getNick(@Path("nick") String nick);
+
+			@GET("message/{time}")
+			Call<Message> getTime(@Path("time") long time);
+
+			@GET("message/{isimage}")
+			Call<Message> getIsimage(@Path("isimage") boolean isimage);
+
+			@GET("message/{msg}")
+			Call<Message> getMsg(@Path("msg") String msg);
+
+			//@GET("message/{img}")
+			//Call<Message> getImg(@Path("isbn") String isbn);
+
+			@POST("message/new")
+			Call<Message> create(@Body Message message);
 		}
 
 		private class ChatRefresherThread {
@@ -301,22 +389,64 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			private int lastId = 0,
 					msgsNeeded = 0;
 
-			public void start() {
+			void start() {
 				Runnable r = new Runnable() {
 					@Override
 					public void run() {
-						if (msgsNeeded != 0 && finished) {
+						if (/*msgsNeeded != 0 &&*/ finished && activityActive) {
 							finished = false;
 							HashMap<String, String> data = new HashMap<>();
 
+							/*
 							if (msgsNeeded == 0)
 								data.put("lastId", "0");//TODO wtf?
 							else data.put("amount", Integer.toString(msgsNeeded));
+							*/
 
 							PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
-								final ListView chatBox = (ListView) getView().findViewById(R.id.chatView);
-								assert chatBox != null;
+								final LinearLayout chatBox = (LinearLayout) getView().findViewById(R.id.chatLayout);
 
+								Call<List<Message>> createCall = service.all();
+								createCall.enqueue(new Callback<List<Message>>() {
+									@Override
+									public void onResponse(Call<List<Message>> _, Response<List<Message>> resp) {
+										if(resp == null) {
+											Toast.makeText(getContext(), "Client failed on reception",
+													Toast.LENGTH_SHORT).show();
+											finished = true;
+											return;
+										}
+
+										if(resp.code() != 200) {
+											Toast.makeText(getContext(), "Error " + resp.code()
+															+ ": " + resp.message(),
+													Toast.LENGTH_SHORT).show();
+											finished = true;
+											return;
+										}
+
+										chatBox.removeAllViews();
+
+										for (Message b : resp.body()) {
+											inflater.inflate(R.layout.item_chat, chatBox);
+
+											View last = chatBox.getChildAt(chatBox.getChildCount()-1);
+
+											((TextView) last.findViewById(R.id.nickView)).setText(b.nick);
+											((TextView) last.findViewById(R.id.extraView)).setText(b.msg);
+										}
+										finished = true;
+									}
+
+									@Override
+									public void onFailure(Call<List<Message>> _, Throwable t) {
+										t.printStackTrace();
+										Toast.makeText(getContext(), "Error recieving", Toast.LENGTH_LONG).show();
+										finished = true;
+									}
+								});
+
+								/*
 								if (msgsNeeded == 0) {
 									ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
 									msgsNeeded = chat.get(chat.size() - 1).id - lastId;
@@ -336,37 +466,19 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 
 									mAdapter.notifyDataSetChanged();
 									finished = true;
-								}
+								}*/
 							}));
 							t.execute(SEVER + PHPs[0]);
 						}
 						if (!stop) mHandler.postDelayed(this, CHAT_REFRESH);
 					}
 				};
+
 				mHandler.postDelayed(r, CHAT_REFRESH);
 			}
 
-			public void stop() {
+			void stop() {
 				stop = true;
-			}
-
-			private class NewMsgsModelClass {
-				@SerializedName("id")
-				public int id;
-			}
-
-			private class ChatMsgModelClass {
-				@SerializedName("id")
-				public int id;
-
-				@SerializedName("nick")
-				public String nick;
-
-				@SerializedName("isImage")
-				public boolean isImage;
-
-				@SerializedName("msg")
-				public String message;
 			}
 		}
 
@@ -381,12 +493,12 @@ public class ChatActivity extends AppCompatActivity implements OnRequestPermissi
 			 */
 			List<String> mExtras = null;
 
-			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, List<String> msgs) {
+			ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, List<String> msgs) {
 				this(context, textViewResourceId, images, nicks, null, msgs);
 			}
 
-			public ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, int[] distances,
-			                       List<String> extras) {
+			ChatItemAdapter(Context context, int textViewResourceId, List<Bitmap> images, List<String> nicks, int[] distances,
+							List<String> extras) {
 				super(context, textViewResourceId, extras);
 				mImages = images;
 				mNicks = nicks;

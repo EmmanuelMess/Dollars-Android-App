@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import org.dollars_bbs.thedollarscommunity.BuildConfig;
 import org.dollars_bbs.thedollarscommunity.MainActivity;
 import org.dollars_bbs.thedollarscommunity.R;
 
@@ -37,7 +38,8 @@ public class PasswordActivity extends AppCompatActivity {
 		};
 
 		View b = findViewById(R.id.button);
-		if(b != null) b.setOnClickListener(c);
+		if(BuildConfig.DEBUG) ((TextView) findViewById(R.id.textView)).setText("baccano");
+		b.setOnClickListener(c);
 	}
 
 }

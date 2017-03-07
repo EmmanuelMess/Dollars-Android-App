@@ -435,7 +435,7 @@ public class MainActivity extends AppCompatActivity
 				while ((s = buffer.readLine()) != null) {
 					html += s;
 				}
-
+/*
 				int start = html.indexOf("<ul id=\"pagemenu\">"),
 						end = html.indexOf("<div id=\"posts\">");
 				html = html.substring(0, start) + html.substring(end);//This deletes the header
@@ -469,7 +469,7 @@ public class MainActivity extends AppCompatActivity
 								"}" +
 								"</style>" +
 								"</head>");
-
+*/
 				return html;
 			} catch (IOException e) {
 				e.printStackTrace();
