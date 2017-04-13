@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity
 		webView = (WebView) findViewById(R.id.webView);
 		assert webView != null;
 		webView.getSettings().setJavaScriptEnabled(false);
-		webView.setBackgroundColor(getColor(R.color.colorPrimaryDark));
+		webView.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
 		webView.setWebViewClient(new PWebViewClient());
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
