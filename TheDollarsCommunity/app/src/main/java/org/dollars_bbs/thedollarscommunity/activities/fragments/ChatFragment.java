@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.annotations.SerializedName;
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
 import com.vanniktech.emoji.EmojiEditText;
 import com.vanniktech.emoji.EmojiPopup;
@@ -25,6 +24,8 @@ import com.vanniktech.emoji.EmojiPopup;
 import org.dollars_bbs.thedollarscommunity.BuildConfig;
 import org.dollars_bbs.thedollarscommunity.R;
 import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
+import org.dollars_bbs.thedollarscommunity.backend.Message;
+import org.dollars_bbs.thedollarscommunity.backend.MessageService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,10 +36,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
 
 import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
@@ -197,50 +194,7 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
         }
     }
 
-    class Message {
-        @SerializedName("nick")
-        String nick;
-
-        @SerializedName("isimage")
-        boolean isimage;
-
-        @SerializedName("msg")
-        String msg;
-
-        //@SerializedName("img")
-        //ByteArray img;
-
-        Message(String nick, boolean isimage, String msg) {
-            this.nick = nick;
-            this.isimage = isimage;
-            this.msg = msg;
-        }
-    }
-
-    interface MessageService {
-        @GET("message")
-        Call<List<Message>> all();
-
-        @GET("message/{nick}")
-        Call<Message> getNick(@Path("nick") String nick);
-
-        @GET("message/{time}")
-        Call<Message> getTime(@Path("time") long time);
-
-        @GET("message/{isimage}")
-        Call<Message> getIsimage(@Path("isimage") boolean isimage);
-
-        @GET("message/{msg}")
-        Call<Message> getMsg(@Path("msg") String msg);
-
-        //@GET("message/{img}")
-        //Call<Message> getImg(@Path("isbn") String isbn);
-
-        @POST("message/new")
-        Call<Message> create(@Body Message message);
-    }
-
-    public class ChatRefresherThread {
+    private class ChatRefresherThread {
         private Handler mHandler = new Handler();
         private boolean stop;
         private boolean finished = true;
@@ -255,11 +209,11 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
                         finished = false;
                         HashMap<String, String> data = new HashMap<>();
 
-							/*
-							if (msgsNeeded == 0)
-								data.put("lastId", "0");//TODO wtf?
-							else data.put("amount", Integer.toString(msgsNeeded));
-							*/
+						/*
+						if (msgsNeeded == 0)
+							data.put("lastId", "0");//TODO wtf?
+						else data.put("amount", Integer.toString(msgsNeeded));
+						*/
 
                         PostResponseAsyncTask t = new PostResponseAsyncTask(getContext(), data, (jsonString->{
                             final LinearLayout chatBox = (LinearLayout) getView().findViewById(R.id.chatLayout);
@@ -304,27 +258,27 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
                                 }
                             });
 
-								/*
-								if (msgsNeeded == 0) {
-									ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
-									msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-								} else {
-									ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
-									lastId = chat.get(chat.size() - 1).id;
-									msgsNeeded = chat.get(chat.size() - 1).id - lastId;
-									for (int i = 0; i < chat.size(); i++) {
-										nicks.add(chat.get(i).nick);
+							/*
+							if (msgsNeeded == 0) {
+								ArrayList<NewMsgsModelClass> chat = new JsonConverter<NewMsgsModelClass>().toArrayList(jsonString, NewMsgsModelClass.class);
+								msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+							} else {
+								ArrayList<ChatMsgModelClass> chat = new JsonConverter<ChatMsgModelClass>().toArrayList(jsonString, ChatMsgModelClass.class);
+								lastId = chat.get(chat.size() - 1).id;
+								msgsNeeded = chat.get(chat.size() - 1).id - lastId;
+								for (int i = 0; i < chat.size(); i++) {
+									nicks.add(chat.get(i).nick);
 
-										if (chat.get(i).isImage) {
-											// TODO: 2016-04-16 send img
-										} else {
-											msgs.add(chat.get(i).message);
-										}
+									if (chat.get(i).isImage) {
+										// TODO: 2016-04-16 send img
+									} else {
+										msgs.add(chat.get(i).message);
 									}
+								}
 
-									mAdapter.notifyDataSetChanged();
-									finished = true;
-								}*/
+								mAdapter.notifyDataSetChanged();
+								finished = true;
+							}*/
                         }));
                         t.execute(ChatActivity.SEVER + ChatActivity.PHPs[0]);
                     }
@@ -335,7 +289,7 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
             mHandler.postDelayed(r, CHAT_REFRESH);
         }
 
-        public void stop() {
+        void stop() {
             stop = true;
         }
     }

@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity
 			"http://drrr.com/", "http://dollars-missions.tumblr.com/", "http://freerice.com", "https://www.kiva.org/",
 			"http://roadrunner-forums.com/boards/index.php?action=vthread&forum=6&topic=8#msg25"};
 
-
 	private WebView webView;
 	private ListView mainRSS;
 	private int currentRSSFeedNum = 0, rssLoadFailed = -1;
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity
 	private NavigationView navigationView;
 	private boolean isRegistered;
 	private AsyncTask<String, Void, String> asyncWebViewLoader;
-	private AsyncTask<Integer, Void, Void> asyncRSSLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -110,12 +108,10 @@ public class MainActivity extends AppCompatActivity
 
 			for (int j = 0; j < RSSRelatedConstants.RSS.length; j++) {
 				prefEdit.putBoolean(RSSRelatedConstants.BOARDS_KEYS[j], (j == 0 || j == 1 || j == 2 || j == 11));
-
 			}
+
 			prefEdit.putBoolean(FIRST_OPEN, false);
-
 			prefEdit.apply();
-
 
 			if (pref.getBoolean(RSSRelatedConstants.NOTIF_KEYS[0], true))
 				RSSScheduledServiceHelper.startScheduled(this);
@@ -332,7 +328,7 @@ public class MainActivity extends AppCompatActivity
 		mainRSS.setVisibility(View.VISIBLE);
 
 		if (showErrorIfOffline()) {
-			asyncRSSLoader = new LoadRSSAsyncTask(this);
+			AsyncTask<Integer, Void, Void> asyncRSSLoader = new LoadRSSAsyncTask(this);
 			asyncRSSLoader.execute(RSSNumber);
 		}
 	}
@@ -538,8 +534,7 @@ public class MainActivity extends AppCompatActivity
 
 		HashMap<String, Integer> mIdMap = new HashMap<>();
 
-		public PArrayAdapter(Context context, int textViewResourceId,
-		                     List<String> objects) {
+		public PArrayAdapter(Context context, int textViewResourceId, List<String> objects) {
 			super(context, textViewResourceId, objects);
 			for (int i = 0; i < objects.size(); ++i) {
 				mIdMap.put(objects.get(i), i);

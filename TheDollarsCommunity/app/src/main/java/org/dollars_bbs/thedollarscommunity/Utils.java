@@ -1,7 +1,8 @@
 package org.dollars_bbs.thedollarscommunity;
 
-import android.content.SharedPreferences;
 import android.os.Build;
+import android.text.Editable;
+import android.text.TextWatcher;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -37,6 +38,24 @@ public class Utils {
 	 */
 	public static boolean equal(Object o1, Object o2) {
 		return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && Objects.equals(o1, o2)) || o1.equals(o2);
+	}
+
+	public static class SimpleOnTextChanged implements TextWatcher {
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+
+		}
 	}
 
 }

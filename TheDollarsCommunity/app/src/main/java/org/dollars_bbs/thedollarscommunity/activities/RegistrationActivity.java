@@ -10,7 +10,6 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +22,7 @@ import com.fourmob.datetimepicker.date.DatePickerDialog;
 
 import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
+import org.dollars_bbs.thedollarscommunity.Utils;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
@@ -75,31 +75,19 @@ public class RegistrationActivity extends AppCompatActivity {
 		TextInputEditText nicknameT = (TextInputEditText) findViewById(R.id.nickEdit);
 		assert nicknameT != null;
 
-		nicknameT.addTextChangedListener(new TextWatcher() {
+		nicknameT.addTextChangedListener(new Utils.SimpleOnTextChanged() {
 			public void afterTextChanged(Editable s) {
 				registerB.setEnabled(s.length() != 0);
 				userDataEditor.putString(getString(R.string.user_file_nick), s.toString());
-			}
-
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
 			}
 		});
 
 		TextInputEditText descriptionT = (TextInputEditText) findViewById(R.id.descriptionEdit);
 		assert descriptionT != null;
 
-		descriptionT.addTextChangedListener(new TextWatcher() {
+		descriptionT.addTextChangedListener(new Utils.SimpleOnTextChanged() {
 			public void afterTextChanged(Editable s) {
 				userDataEditor.putString(getString(R.string.user_file_description), s.toString());
-			}
-
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
 			}
 		});
 
