@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity
 
 		webView = (WebView) findViewById(R.id.webView);
 		assert webView != null;
-		webView.getSettings().setJavaScriptEnabled(true);
+		webView.getSettings().setJavaScriptEnabled(false);
+		webView.setBackgroundColor(getColor(R.color.colorPrimaryDark));
 		webView.setWebViewClient(new PWebViewClient());
 
 		mainRSS = (ListView) findViewById(R.id.main_rss);
@@ -435,7 +436,7 @@ public class MainActivity extends AppCompatActivity
 				while ((s = buffer.readLine()) != null) {
 					html += s;
 				}
-/*
+
 				int start = html.indexOf("<ul id=\"pagemenu\">"),
 						end = html.indexOf("<div id=\"posts\">");
 				html = html.substring(0, start) + html.substring(end);//This deletes the header
@@ -469,7 +470,7 @@ public class MainActivity extends AppCompatActivity
 								"}" +
 								"</style>" +
 								"</head>");
-*/
+
 				return html;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -484,7 +485,6 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	private class PWebViewClient extends WebViewClient {// TODO: 2016-03-20 add resizing capabilities to the WebView
-
 		//All the webs that don't require selected links to be loaded on other browser
 		private final String[] SELECT_WEBS = {WEBS[0], WEBS[1], WEBS[2], WEBS[3], WEBS[4], WEBS[7]};
 
@@ -505,7 +505,6 @@ public class MainActivity extends AppCompatActivity
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			super.onPageStarted(view, url, favicon);
-			unloadPage();
 			progressBar.setVisibility(View.VISIBLE);
 		}
 
