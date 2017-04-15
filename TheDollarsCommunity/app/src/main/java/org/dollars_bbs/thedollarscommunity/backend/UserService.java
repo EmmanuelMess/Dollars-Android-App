@@ -10,7 +10,7 @@ import retrofit2.http.Path;
  * @author Emmanuel
  *         on 13/4/2017, at 13:59.
  */
-interface UserService {
+public interface UserService {
 	@GET("user/{nick}")
 	Call<User> getNick(@Path("nick") String nick);
 

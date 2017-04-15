@@ -26,6 +26,7 @@ import org.dollars_bbs.thedollarscommunity.R;
 import org.dollars_bbs.thedollarscommunity.activities.ChatActivity;
 import org.dollars_bbs.thedollarscommunity.backend.Message;
 import org.dollars_bbs.thedollarscommunity.backend.MessageService;
+import org.dollars_bbs.thedollarscommunity.backend.RetrofitLoad;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +36,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static org.dollars_bbs.thedollarscommunity.Utils.equal;
 
@@ -60,7 +60,6 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
     private int FRAGMENT_TYPE;
     private ChatItemAdapter mAdapter;
     private String nick;
-
     private MessageService service;
 
     @Override
@@ -84,10 +83,7 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
         super.onViewCreated(view, savedInstanceState);
 
         if (FRAGMENT_TYPE == CHAT) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("https://dollarscommunity.herokuapp.com")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
+            Retrofit retrofit = RetrofitLoad.loadRetrofit();
 
             service = retrofit.create(MessageService.class);
 

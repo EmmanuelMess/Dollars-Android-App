@@ -23,7 +23,7 @@ public class User {
 	@SerializedName("gender")
 	String gender;
 
-	User(String nick, long birth, String desc, String gender) {
+	public User(String nick, long birth, String desc, String gender) {
 		this.nick = nick;
 		this.birth = birth;
 		this.desc = desc;

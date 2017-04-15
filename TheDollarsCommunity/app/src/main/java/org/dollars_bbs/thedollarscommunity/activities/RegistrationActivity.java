@@ -11,25 +11,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.fourmob.datetimepicker.date.DatePickerDialog;
 
 import org.dollars_bbs.thedollarscommunity.IO;
 import org.dollars_bbs.thedollarscommunity.R;
 import org.dollars_bbs.thedollarscommunity.Utils;
+import org.dollars_bbs.thedollarscommunity.backend.RetrofitLoad;
+import org.dollars_bbs.thedollarscommunity.backend.User;
+import org.dollars_bbs.thedollarscommunity.backend.UserService;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class RegistrationActivity extends AppCompatActivity {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class RegistrationActivity extends AppCompatActivity implements View.OnClickListener {
 
 	private static final int SELECT_PHOTO = 1;
 	private static final int MAX_LIFE_LENGTH = 100,
@@ -37,7 +44,11 @@ public class RegistrationActivity extends AppCompatActivity {
 	private static final String DATE_PICKER_TAG = "datepicker";
 
 	private SharedPreferences.Editor userDataEditor;
-	private static Button birthB;
+	private TextInputEditText nicknameT, descriptionT;
+	private Spinner genderS;
+	private Calendar calendar;
+	private DatePickerDialog datePickerDialog;
+	private Button birthB;
 	private ImageButton imageB;
 	private ProgressBar imageProgressBar;
 
@@ -57,11 +68,9 @@ public class RegistrationActivity extends AppCompatActivity {
 		userDataEditor = userData.edit();
 
 		imageProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-
 		imageB = (ImageButton) findViewById(R.id.userImageButton);
-		assert imageB != null;
 
-		View.OnClickListener imageL = v->{
+		View.OnClickListener imageL = v -> {
 			Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
 			photoPickerIntent.setType("image/*");
 			startActivityForResult(photoPickerIntent, SELECT_PHOTO);
@@ -70,82 +79,50 @@ public class RegistrationActivity extends AppCompatActivity {
 		imageB.setOnClickListener(imageL);
 
 		final Button registerB = (Button) findViewById(R.id.registerButton);
-		assert registerB != null;
 
-		TextInputEditText nicknameT = (TextInputEditText) findViewById(R.id.nickEdit);
-		assert nicknameT != null;
+		nicknameT = (TextInputEditText) findViewById(R.id.nickEdit);
 
 		nicknameT.addTextChangedListener(new Utils.SimpleOnTextChanged() {
 			public void afterTextChanged(Editable s) {
 				registerB.setEnabled(s.length() != 0);
-				userDataEditor.putString(getString(R.string.user_file_nick), s.toString());
 			}
 		});
 
-		TextInputEditText descriptionT = (TextInputEditText) findViewById(R.id.descriptionEdit);
-		assert descriptionT != null;
+		descriptionT = (TextInputEditText) findViewById(R.id.descriptionEdit);
 
-		descriptionT.addTextChangedListener(new Utils.SimpleOnTextChanged() {
-			public void afterTextChanged(Editable s) {
-				userDataEditor.putString(getString(R.string.user_file_description), s.toString());
-			}
-		});
+		genderS = (Spinner) findViewById(R.id.spinner);
 
-		Spinner genderS = (Spinner) findViewById(R.id.spinner);
-		assert genderS != null;
-
-		// Create an ArrayAdapter using the string array and a default spinner layout
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.gender_array, android.R.layout.simple_spinner_item);
-		// Specify the layout to use when the list of choices appears
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		// Apply the adapter to the spinner
 		genderS.setAdapter(adapter);
 
-		genderS.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				userDataEditor.putString(getString(R.string.user_file_gender), getResources().getStringArray(R.array.gender_array)[position]);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-			}
-		});
-
-		final Calendar calendar = Calendar.getInstance();
+		calendar = Calendar.getInstance();
 		calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - MIN_LIFE_LENGTH);
 
 		birthB = (Button) findViewById(R.id.button2);
-		assert birthB != null;
 		birthB.setText(date(calendar, userDataEditor));
 
-		final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance((datePickerDialog1, year, month, day)->{
+		datePickerDialog = DatePickerDialog.newInstance((datePickerDialog1, year, month, day) -> {
 			calendar.set(year, month, day);
 			birthB.setText(date(calendar, userDataEditor));
 		}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-		datePickerDialog.setYearRange(calendar.get(Calendar.YEAR) - MAX_LIFE_LENGTH, calendar.get(Calendar.YEAR) - MIN_LIFE_LENGTH);
+		datePickerDialog.setYearRange(calendar.get(Calendar.YEAR) - MAX_LIFE_LENGTH,
+				calendar.get(Calendar.YEAR) - MIN_LIFE_LENGTH);
 		datePickerDialog.setVibrate(false);
 		datePickerDialog.setCloseOnSingleTapDay(false);
 
-		birthB.setOnClickListener(v->datePickerDialog.show(getSupportFragmentManager(), DATE_PICKER_TAG));
+		birthB.setOnClickListener(v -> datePickerDialog.show(getSupportFragmentManager(), DATE_PICKER_TAG));
 
-		View.OnClickListener registerL = v->{
-			userDataEditor.putInt(getString(R.string.user_file_registered), 1);
-			userDataEditor.apply();
-
-			startActivity(new Intent(getApplicationContext(), ChatActivity.class));
-		};
-
-		registerB.setOnClickListener(registerL);
+		registerB.setOnClickListener(this);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
 		super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-		switch(requestCode) {
+		switch (requestCode) {
 			case SELECT_PHOTO:
-				if(resultCode == RESULT_OK){
+				if (resultCode == RESULT_OK) {
 					try {
 						Uri selectedImage = imageReturnedIntent.getData();
 						Bitmap userImage = IO.decodeUri(selectedImage, 100, true, getContentResolver());
@@ -157,6 +134,41 @@ public class RegistrationActivity extends AppCompatActivity {
 		}
 	}
 
+	@Override
+	public void onClick(View v) {
+		String nick = nicknameT.getText().toString();
+		long birth = 0l;//datePickerDialog.getSelectedDay().;
+		String desc = descriptionT.getText().toString(),
+				gender = getResources().getStringArray(R.array.gender_array)[genderS.getSelectedItemPosition()];
+
+		userDataEditor.putString(getString(R.string.user_file_nick), nick);
+		userDataEditor.putString(getString(R.string.user_file_description), desc);
+		userDataEditor.putString(getString(R.string.user_file_gender), gender);
+		userDataEditor.putInt(getString(R.string.user_file_registered), 1);
+		userDataEditor.apply();
+
+		User user = new User(nick, birth, desc, gender);
+		UserService service = RetrofitLoad.loadRetrofit().create(UserService.class);
+		Call<User> createCall = service.create(user);
+		createCall.enqueue(new Callback<User>() {
+			@Override
+			public void onResponse(Call<User> _, Response<User> resp) {
+				if (resp.code() != 200) {
+					Toast.makeText(getApplicationContext(), "Error " + resp.code() + ": " + resp.message(),
+							Toast.LENGTH_SHORT).show();
+				} else {
+					startActivity(new Intent(getApplicationContext(), ChatActivity.class));
+				}
+			}
+
+			@Override
+			public void onFailure(Call<User> _, Throwable t) {
+				t.printStackTrace();
+				Toast.makeText(getApplicationContext(), "Error sending", Toast.LENGTH_LONG).show();
+			}
+		});
+	}
+
 	private class SpinnerSaveImageAsyncTask extends IO.SaveImageAsyncTask {
 		@Override
 		protected void onPreExecute() {
@@ -165,7 +177,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
 		@Override
 		protected void onPostExecute(Bitmap o) {
-			if(failed == null)
+			if (failed == null)
 				imageB.setImageBitmap(o);
 			else
 				failed.printStackTrace();
@@ -176,12 +188,12 @@ public class RegistrationActivity extends AppCompatActivity {
 
 	}
 
-		private String date(Calendar d, SharedPreferences.Editor editor) {
+	private String date(Calendar d, SharedPreferences.Editor editor) {
 		editor.putInt(getString(R.string.user_file_birth_day), d.get(Calendar.DAY_OF_MONTH));
 		editor.putInt(getString(R.string.user_file_birth_month), d.get(Calendar.MONTH));
 		editor.putInt(getString(R.string.user_file_birth_year), d.get(Calendar.YEAR));
 
-		return 	new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(d.getTime()); // TODO: 2016-03-25 make month lowercase
+		return new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(d.getTime()); // TODO: 2016-03-25 make month lowercase
 	}
 
 }
