@@ -37,12 +37,12 @@
             android:text="@string/separation"
             android:id="@+id/separatorView"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/nickView"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="false"
             android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"/>
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -59,7 +59,7 @@
 
     </RelativeLayout>
 
-    <TextView
+    <com.vanniktech.emoji.EmojiTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"

@@ -60,6 +60,7 @@
                 android:layout_height="wrap_content"
                 android:imeOptions="actionSend"
                 android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="3"
                 app:emojiSize="26sp"/>
         </ScrollView>
 

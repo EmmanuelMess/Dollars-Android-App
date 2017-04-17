@@ -49,6 +49,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.7'
     //emoji keyboard
     compile 'com.github.EmmanuelMess.Emoji:emoji:0.4.1'
+    compile 'com.github.EmmanuelMess.Emoji:emoji-one:0.4.1'
 
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.2.0'

@@ -16,9 +16,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.vanniktech.emoji.one.EmojiOneProvider;
 
 import com.kosalgeek.genasync12.PostResponseAsyncTask;
+
 import com.vanniktech.emoji.EmojiEditText;
+import com.vanniktech.emoji.EmojiManager;
 import com.vanniktech.emoji.EmojiPopup;
 
 import org.dollars_bbs.thedollarscommunity.BuildConfig;
@@ -70,6 +73,9 @@ public class ChatFragment extends BackPressFragment implements AdapterView.OnIte
 
         FRAGMENT_TYPE = getArguments().getInt(ARG_ITEM);
         nick = getArguments().getString(ARG_NICK);
+
+        // This line needs to be executed before any usage of EmojiTextView or EmojiEditText.
+	    EmojiManager.install(new EmojiOneProvider());
     }
 
     @Override
